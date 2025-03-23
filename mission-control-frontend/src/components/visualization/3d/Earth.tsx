@@ -15,6 +15,7 @@ const Earth: React.FC = () => {
   ]);
 
   const groupRef = useRef<THREE.Group>(null);
+  // Earth's sidereal rotation period ≈ 86164 seconds → rotation speed in rad/s.
   const rotationSpeed = (2 * Math.PI) / 86164;
 
   useFrame((_, delta) => {
@@ -25,12 +26,14 @@ const Earth: React.FC = () => {
 
   return (
     <group ref={groupRef}>
+      {/* Earth sphere with radius 6.4 (≈6371 km / 1000) */}
       <mesh>
-        <sphereGeometry args={[2, 64, 64]} />
+        <sphereGeometry args={[6.4, 64, 64]} />
         <meshPhongMaterial map={colorMap} specularMap={specularMap} normalMap={normalMap} />
       </mesh>
+      {/* Slightly larger sphere for clouds */}
       <mesh>
-        <sphereGeometry args={[2.03, 64, 64]} />
+        <sphereGeometry args={[6.5, 64, 64]} />
         <meshLambertMaterial map={cloudMap} transparent opacity={0.4} depthWrite={true} />
       </mesh>
     </group>

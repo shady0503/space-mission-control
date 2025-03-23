@@ -19,28 +19,21 @@ interface SceneProps {
   satellites?: SatelliteConfig[];
 }
 
+
+
 const defaultSatellites: SatelliteConfig[] = [
   {
-    orbitRadius: 10,
-    speed: 0.1,
-    name: 'Satellite 1',
-    details: 'First satellite orbiting the Earth.',
-    scale: 0.3,
+    orbitRadius: 6789.6, // 6371 km (Earth) + 418.6 km (ISS altitude)
+    speed: 0.0005,       // fallback angular speed (radians per second)
+    name: 'ISS',
+    details: 'International Space Station',
+    scale: 0.3,          // relatively small compared to Earth
     initialTheta: 0,
     modelUrl: '/assets/satellites/AcrimSAT.glb',
     trajectoryColor: 'lightblue',
   },
-  {
-    orbitRadius: 12,
-    speed: 0.08,
-    name: 'Satellite 2',
-    details: 'Second satellite orbiting the Earth.',
-    scale: 0.3,
-    initialTheta: Math.PI,
-    modelUrl: '/assets/satellites/AcrimSAT.glb',
-    trajectoryColor: 'lightgreen',
-  },
 ];
+
 
 const Scene: React.FC<SceneProps> = ({ satellites = defaultSatellites }) => {
   // Store satellite configs in state so they can be updated.

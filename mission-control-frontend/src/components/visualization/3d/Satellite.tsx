@@ -5,13 +5,14 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import useTelemetry, { TelemetryData } from '../../../api/hooks/useTelemtry';
 
 interface SatelliteProps {
-  orbitRadius: number;
-  speed: number;
+  orbitRadius: number; // fallback orbit radius in km
+  speed: number;       // fallback angular speed in rad/s
   name: string;
   details: string;
-  scale: number;
+  scale: number;       // scale for the model (e.g., 0.3)
   initialTheta: number;
   modelUrl: string;
   onClick: (data: { name: string; details: string; object: THREE.Group }) => void;
@@ -29,35 +30,32 @@ const Satellite: React.FC<SatelliteProps> = ({
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const gltf = useGLTF(modelUrl);
-  // Clone the model so each satellite instance is independent.
   const clonedScene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
 
-  // Refs to store the current orbit parameters used for animation.
+  // Fallback simulation state (orbitRadius in km)
   const currentOrbitRadius = useRef<number>(orbitRadius);
   const currentSpeed = useRef<number>(speed);
-  // Theta holds the satellite's angular position.
   const theta = useRef<number>(initialTheta);
-
-  // A transition object to smoothly interpolate orbitRadius changes.
-  // When orbitRadius prop changes, this ref is set to an object containing the start time, duration, and the old and new orbit radii.
   const radiusTransition = useRef<{ start: number; duration: number; from: number; to: number } | null>(null);
-  // Similarly, for speed if desired:
   const speedTransition = useRef<{ start: number; duration: number; from: number; to: number } | null>(null);
 
-  // When the orbitRadius prop changes, initiate a transition.
+  // Use telemetry from the backend.
+  const telemetry: TelemetryData | null = useTelemetry();
+
+  // Time scale multiplier to speed up simulation if needed.
+  const timeScale = 100;
+
   useEffect(() => {
-    // If the new orbit radius is different from the current animated value, start a transition.
     if (orbitRadius !== currentOrbitRadius.current) {
       radiusTransition.current = {
         start: performance.now(),
-        duration: 5000, // 5 seconds transition (adjust as needed)
+        duration: 5000,
         from: currentOrbitRadius.current,
         to: orbitRadius,
       };
     }
   }, [orbitRadius]);
 
-  // (Optional) When the speed prop changes, start a speed transition.
   useEffect(() => {
     if (speed !== currentSpeed.current) {
       speedTransition.current = {
@@ -69,44 +67,41 @@ const Satellite: React.FC<SatelliteProps> = ({
     }
   }, [speed]);
 
-  // In each frame, update the transition values.
   useFrame((_, delta) => {
-    // Update orbit radius with transition if active.
-    if (radiusTransition.current) {
-      const now = performance.now();
-      const t = Math.min((now - radiusTransition.current.start) / radiusTransition.current.duration, 1);
-      // Ease-in-out using sine easing.
-      const easedT = (1 - Math.cos(Math.PI * t)) / 2;
-      currentOrbitRadius.current = THREE.MathUtils.lerp(radiusTransition.current.from, radiusTransition.current.to, easedT);
-      if (t >= 1) {
-        radiusTransition.current = null;
+    const scaledDelta = delta * timeScale;
+    if (telemetry && groupRef.current) {
+      // Use telemetry: telemetry.positionX is longitude (deg), positionY is latitude (deg),
+      // telemetry.orbitRadius is in km.
+      const latRad = (telemetry.positionY * Math.PI) / 180;
+      const lonRad = (telemetry.positionX * Math.PI) / 180;
+      const scaleFactor = 1 / 1000; // convert km to scene units
+      const sceneOrbit = telemetry.orbitRadius * scaleFactor;
+      const x = sceneOrbit * Math.cos(latRad) * Math.cos(lonRad);
+      const y = sceneOrbit * Math.sin(latRad);
+      const z = sceneOrbit * Math.cos(latRad) * Math.sin(lonRad);
+      groupRef.current.position.set(x, y, z);
+    } else if (groupRef.current) {
+      // Fallback simulation: update position using internal state.
+      if (radiusTransition.current) {
+        const now = performance.now();
+        const t = Math.min((now - radiusTransition.current.start) / radiusTransition.current.duration, 1);
+        const easedT = (1 - Math.cos(Math.PI * t)) / 2;
+        currentOrbitRadius.current = THREE.MathUtils.lerp(radiusTransition.current.from, radiusTransition.current.to, easedT);
+        if (t >= 1) radiusTransition.current = null;
       }
-    } else {
-      currentOrbitRadius.current = orbitRadius;
-    }
-
-    // Update speed with transition if active.
-    if (speedTransition.current) {
-      const now = performance.now();
-      const t = Math.min((now - speedTransition.current.start) / speedTransition.current.duration, 1);
-      const easedT = (1 - Math.cos(Math.PI * t)) / 2;
-      currentSpeed.current = THREE.MathUtils.lerp(speedTransition.current.from, speedTransition.current.to, easedT);
-      if (t >= 1) {
-        speedTransition.current = null;
+      if (speedTransition.current) {
+        const now = performance.now();
+        const t = Math.min((now - speedTransition.current.start) / speedTransition.current.duration, 1);
+        const easedT = (1 - Math.cos(Math.PI * t)) / 2;
+        currentSpeed.current = THREE.MathUtils.lerp(speedTransition.current.from, speedTransition.current.to, easedT);
+        if (t >= 1) speedTransition.current = null;
       }
-    } else {
-      currentSpeed.current = speed;
-    }
-
-    // Update theta using the current speed.
-    theta.current += currentSpeed.current * delta;
-
-    // Compute new position using the current (transitioned) orbit radius.
-    const x = currentOrbitRadius.current * Math.cos(theta.current);
-    const z = currentOrbitRadius.current * Math.sin(theta.current);
-    const y = 0; // Orbit on the xz plane.
-
-    if (groupRef.current) {
+      theta.current += currentSpeed.current * scaledDelta;
+      // Convert fallback orbitRadius from km to scene units.
+      const sceneOrbit = currentOrbitRadius.current / 1000;
+      const x = sceneOrbit * Math.cos(theta.current);
+      const z = sceneOrbit * Math.sin(theta.current);
+      const y = 0;
       groupRef.current.position.set(x, y, z);
     }
   });
