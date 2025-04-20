@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: spacecraft-service
+
+  datasource:
+    url: jdbc:postgresql://postgres-spacecraft:5432/spacecraft_db
+    username: spacecraft_user
+    password: spacecraft_pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+n2yo:
+  api:
+    key: "2Q9ZTN-2WB26E-FBNTLF-5FTW"
+telemetry:
+  client:
+    url: http://telemetry:8080/api/telemetry
+
+# --------------------------------------------------------------------------- #
+# Full service mesh: every service can call others if needed
+# --------------------------------------------------------------------------- #
