@@ -5,6 +5,13 @@ spring:
   application:
     name: enterprise-service
 
+  datasource:
+    url: jdbc:postgresql://postgres-entreprise:5432/entreprise_db
+    username: entreprise_user
+    password: entreprise_pass
+    driver-class-name: org.postgresql.Driver
 
-
+  jpa:
+    hibernate:
+      ddl-auto: update
 
