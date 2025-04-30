@@ -1,0 +1,20 @@
+pring:
+  application:
+    name: dashboard-service
+
+# Load service URLs from environment
+services:
+  mission-service:
+    url: ${MISSION_SERVICE_URL}
+  spacecraft:
+    url: ${SPACECRAFT_SERVICE_URL}
+  telemetry:
+    url: ${TELEMETRY_SERVICE_URL}
+  operator-service:
+    url: ${OPERATOR_SERVICE_URL}
+
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: basic
