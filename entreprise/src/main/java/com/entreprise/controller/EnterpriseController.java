@@ -1,33 +1,36 @@
 package com.entreprise.controller;
 
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.entreprise.dto.CreateEnterpriseRequest;
-import com.entreprise.dto.UpdateEnterpriseRequest;
+import com.entreprise.client.MissionClient;
+import com.entreprise.client.OperatorClient;
+import com.entreprise.client.SpacecraftClient;
+import com.entreprise.dto.*;
 import com.entreprise.model.Enterprise;
 import com.entreprise.service.EnterpriseService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/enterprise")
 public class EnterpriseController {
 
     private final EnterpriseService enterpriseService;
+    private final OperatorClient operatorClient;
+    private final MissionClient missionClient;
+    private final SpacecraftClient spacecraftClient;
 
     public EnterpriseController(
-            EnterpriseService enterpriseService) {
+            EnterpriseService enterpriseService,
+            OperatorClient operatorClient,
+            MissionClient missionClient,
+            SpacecraftClient spacecraftClient) {
         this.enterpriseService = enterpriseService;
+        this.operatorClient    = operatorClient;
+        this.missionClient     = missionClient;
+        this.spacecraftClient  = spacecraftClient;
     }
 
     // --- CRUD on Enterprise ---
@@ -67,5 +70,28 @@ public class EnterpriseController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         enterpriseService.deleteEnterprise(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // --- Aggregates: delegate to other services ---
+
+    /** GET /api/enterprises/{id}/operators */
+    @GetMapping("/{id}/operators")
+    public ResponseEntity<List<OperatorDto>> operators(@PathVariable UUID id) {
+        List<OperatorDto> ops = operatorClient.getByEnterprise(id);
+        return ResponseEntity.ok(ops);
+    }
+
+    /** GET /api/enterprises/{id}/missions */
+    @GetMapping("/{id}/missions")
+    public ResponseEntity<List<MissionDto>> missions(@PathVariable UUID id) {
+        List<MissionDto> ms = missionClient.getByEnterprise(id);
+        return ResponseEntity.ok(ms);
+    }
+
+    /** GET /api/enterprises/{id}/spacecraft */
+    @GetMapping("/{id}/spacecraft")
+    public ResponseEntity<List<SpacecraftDto>> spacecraft(@PathVariable UUID id) {
+        List<SpacecraftDto> sc = spacecraftClient.getByEnterprise(id);
+        return ResponseEntity.ok(sc);
     }
 }
