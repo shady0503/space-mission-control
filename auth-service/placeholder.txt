@@ -1,4 +1,0 @@
-Initial project setup
-Implemented model-view-controller architecture
-Added REST clients for external services
-Integrated Kafka message broker
