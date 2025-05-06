@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17.4       # or your preferred Postgres version
+    container_name: entreprise-db
+    environment:
+      POSTGRES_DB: entreprise_db
+      POSTGRES_USER: entreprise_user
+      POSTGRES_PASSWORD: entreprise_pass
+    ports:
+      - "5434:5432"           # map host 5434 → container 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

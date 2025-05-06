@@ -1,0 +1,39 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: enterprise-service
+
+  datasource:
+    url: jdbc:postgresql://postgres-entreprise:5432/entreprise_db
+    username: entreprise_user
+    password: entreprise_pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+  cloud:
+    openfeign:
+      clients:
+        mission-service:
+          url: http://mission-service:8080
+        auth-service:
+          url: http://auth-service:8080
+        spacecraft-service:
+          url: http://spacecraft:8080
+        
+
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+# --------------------------------------------------------------------------- #
+# Remote service locations for Feign and internal communication
+# --------------------------------------------------------------------------- #
+
