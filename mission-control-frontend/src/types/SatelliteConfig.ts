@@ -1,11 +1,8 @@
+// types/SatelliteConfig.ts
 export interface SatelliteConfig {
-    orbitRadius: number;
-    speed: number;
-    name: string;
-    details: string;
-    scale: number;
-    initialTheta: number;
-    modelUrl: string;
-    trajectoryColor?: string;
-  }
-  
+  name: string;
+  details: string;
+  scale: number;
+  modelUrl: string;
+  satId?: string; // Added to identify the satellite in telemetry data
+}

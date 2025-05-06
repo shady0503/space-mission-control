@@ -1,43 +1,45 @@
+import React, { useEffect } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import { useSpring } from '@react-spring/three';
-import { useEffect } from 'react';
 import * as THREE from 'three';
 
 interface CameraControllerProps {
-  targetPosition: THREE.Vector3 | null;
+  targetPosition: THREE.Vector3;
   isFocused: boolean;
+  defaultPosition: THREE.Vector3;
+  defaultLookAt: THREE.Vector3;
+  offset: THREE.Vector3;
 }
 
-const CameraController: React.FC<CameraControllerProps> = ({ targetPosition, isFocused }) => {
+const CameraController: React.FC<CameraControllerProps> = ({
+  targetPosition,
+  isFocused,
+  defaultPosition,
+  defaultLookAt,
+  offset,
+}) => {
   const { camera } = useThree();
-
   const [spring, api] = useSpring(() => ({
-    from: {
-      posX: camera.position.x,
-      posY: camera.position.y,
-      posZ: camera.position.z,
-    },
+    pos: [camera.position.x, camera.position.y, camera.position.z],
     config: { mass: 1, tension: 170, friction: 26 },
   }));
 
   useEffect(() => {
     if (isFocused && targetPosition) {
-      // Offset the camera a bit for a better view of the satellite
-      const newPos = {
-        posX: targetPosition.x + 2,
-        posY: targetPosition.y + 2,
-        posZ: targetPosition.z + 2,
-      };
-      api.start(newPos);
+      const newPos = new THREE.Vector3().copy(targetPosition).add(offset);
+      api.start({ pos: newPos.toArray() });
+    } else {
+      api.start({ pos: defaultPosition.toArray() });
     }
-  }, [targetPosition, isFocused, api]);
+  }, [isFocused, targetPosition, api, defaultPosition, offset]);
 
   useFrame(() => {
-    camera.position.set(spring.posX.get(), spring.posY.get(), spring.posZ.get());
-    if (targetPosition) {
+    const pos = spring.pos.get();
+    camera.position.set(pos[0], pos[1], pos[2]);
+    if (isFocused && targetPosition) {
       camera.lookAt(targetPosition.x, targetPosition.y, targetPosition.z);
     } else {
-      camera.lookAt(0, 0, 0);
+      camera.lookAt(defaultLookAt.x, defaultLookAt.y, defaultLookAt.z);
     }
   });
 

@@ -1,10 +1,11 @@
-// Earth.tsx
 'use client';
-
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+
+const EARTH_RADIUS_KM = 6371;
+const SCALE = 1 / 1000;
 
 const Earth: React.FC = () => {
   const [colorMap, normalMap, specularMap, cloudMap] = useTexture([
@@ -14,30 +15,49 @@ const Earth: React.FC = () => {
     '/textures/earth_clouds.jpg',
   ]);
 
-  const groupRef = useRef<THREE.Group>(null);
-  // Earth's sidereal rotation period ≈ 86164 seconds → rotation speed in rad/s.
-  const rotationSpeed = (2 * Math.PI) / 86164;
+  const rotationGroupRef = useRef<THREE.Group>(null);
+  const rotationSpeed = (2 * Math.PI) / 86164; // one sidereal day
+
+  const earthMaterial = useMemo(() => {
+    return new THREE.MeshPhongMaterial({
+      map: colorMap,
+      normalMap: normalMap,
+      specularMap: specularMap,
+      specular: new THREE.Color(0x333333),
+      shininess: 25,
+      reflectivity: 0.1,
+    });
+  }, [colorMap, normalMap, specularMap]);
+
+  const cloudMaterial = useMemo(() => {
+    return new THREE.MeshPhongMaterial({
+      map: cloudMap,
+      transparent: true,
+      opacity: 0.35,
+      depthWrite: false,
+    });
+  }, [cloudMap]);
 
   useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += rotationSpeed * delta;
+    if (rotationGroupRef.current) {
+      rotationGroupRef.current.rotation.y += rotationSpeed * delta;
     }
   });
 
   return (
-    <group ref={groupRef}>
-      {/* Earth sphere with radius 6.4 (≈6371 km / 1000) */}
-      <mesh>
-        <sphereGeometry args={[6.4, 64, 64]} />
-        <meshPhongMaterial map={colorMap} specularMap={specularMap} normalMap={normalMap} />
-      </mesh>
-      {/* Slightly larger sphere for clouds */}
-      <mesh>
-        <sphereGeometry args={[6.5, 64, 64]} />
-        <meshLambertMaterial map={cloudMap} transparent opacity={0.4} depthWrite={true} />
-      </mesh>
+    <group>
+      <group ref={rotationGroupRef}>
+        <mesh castShadow receiveShadow>
+          <sphereGeometry args={[EARTH_RADIUS_KM * SCALE, 64, 64]} />
+          <primitive object={earthMaterial} attach="material" />
+        </mesh>
+        <mesh>
+          <sphereGeometry args={[EARTH_RADIUS_KM * SCALE * 1.01, 64, 64]} />
+          <primitive object={cloudMaterial} attach="material" />
+        </mesh>
+      </group>
     </group>
   );
 };
 
-export default Earth;
+export default React.memo(Earth);

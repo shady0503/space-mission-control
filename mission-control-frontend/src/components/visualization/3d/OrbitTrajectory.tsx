@@ -1,4 +1,3 @@
-// OrbitTrajectory.tsx
 'use client';
 
 import React, { useMemo } from 'react';
@@ -15,9 +14,8 @@ const OrbitTrajectory: React.FC<OrbitTrajectoryProps> = ({
   segments = 128,
   color = 'white',
 }) => {
-  const scaleFactor = 1 / 1000; // convert km to scene units
-  const sceneOrbitRadius = orbitRadius * scaleFactor; // e.g., 6789.6 km becomes ~6.79
-
+  const scaleFactor = 1 / 1000;
+  const sceneOrbitRadius = orbitRadius * scaleFactor;
   const points = useMemo(() => {
     const pts: number[] = [];
     for (let i = 0; i <= segments; i++) {
