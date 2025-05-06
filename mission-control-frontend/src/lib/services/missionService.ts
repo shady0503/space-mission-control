@@ -3,8 +3,10 @@
  * Functions for managing missions
  */
 
+import { use } from "react";
 import apiClient from "../api/apiClient";
 import { API_CONFIG } from "../api/config";
+import { useAuth } from "../hooks";
 
 export interface Mission {
   id: number;
@@ -101,9 +103,9 @@ export const missionService = {
    * @param missionData Updated mission data
    * @returns Updated mission
    */
-  updateMission: async (missionData: Mission): Promise<Mission> => {
-    return apiClient.post(
-      `${API_CONFIG.ENDPOINTS.MISSIONS.BASE}/update`,
+  updateMission: async (missionData: Mission, operatorId: string): Promise<Mission> => {
+    return apiClient.put(
+      `${API_CONFIG.ENDPOINTS.MISSIONS.BASE}/${missionData.id}?operatorId=${operatorId}`,
       missionData
     );
   },

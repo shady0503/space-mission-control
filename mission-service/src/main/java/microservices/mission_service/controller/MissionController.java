@@ -32,8 +32,15 @@ public class MissionController {
     /* ---------- CRUD ---------- */
 
     @PostMapping
-    public MissionDto create(@RequestBody MissionCreateRequest req) {
-        return svc.create(req);
+    public MissionDto create(@RequestBody MissionCreateRequest req, @RequestParam UUID operatorId) {
+        MissionDto dto = svc.create(req, operatorId);
+        OperatorRoleUpdateRequest request = new OperatorRoleUpdateRequest(
+                dto.id(),
+                operatorId,
+                MissionRole.ADMIN
+        );
+        auth.assignOperatorRole(request);
+        return dto;
     }
 
     @GetMapping("/enterprise/{enterpriseId}")

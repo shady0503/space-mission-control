@@ -2,6 +2,7 @@ package microservices.auth_service.service;
 
 import microservices.auth_service.client.MissionClient;
 import microservices.auth_service.dto.MissionRole;
+import microservices.auth_service.dto.OperatorResponse;
 import microservices.auth_service.dto.SignupRequest;
 import microservices.auth_service.dto.UpdateOperatorRequest;
 import microservices.auth_service.event.OperatorCreatedEvent;
@@ -16,10 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class OperatorService {
@@ -212,5 +211,51 @@ public class OperatorService {
 
     public Long countByEnterpriseId(UUID enterpriseId) {
         return operatorRepo.countOperatorByEnterpriseId(enterpriseId);
+    }
+
+
+
+    public List<OperatorResponse> search(String searchQuery) {
+        if (searchQuery == null || searchQuery.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String query = searchQuery.toLowerCase().trim();
+
+        return operatorRepo.findAll().stream()
+                .filter(operator ->
+                        operator.getUsername().toLowerCase().contains(query) ||
+                                operator.getEmail().toLowerCase().contains(query))
+                .map(op -> new OperatorResponse(
+                        op.getId(),
+                        op.getUsername(),
+                        op.getEmail(),
+                        op.getCreatedAt(),
+                        op.getEnterpriseId()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public OperatorResponse addToenterprise(UUID operatorId, UUID enterpriseID) {
+        Operator O = operatorRepo.findById(operatorId).isPresent() ? operatorRepo.findById(operatorId).get() : null;
+        if(O==null){
+            throw new IllegalArgumentException("Operator not found");
+        }
+
+        if(O.getEnterpriseId()!=null){
+            throw new IllegalArgumentException("Operator already exists in an Enterprise");
+        }
+
+
+        O.setEnterpriseId(enterpriseID);
+        operatorRepo.save(O);
+        return new OperatorResponse(
+                O.getId(),
+                O.getUsername(),
+                O.getEmail(),
+                O.getCreatedAt(),
+                enterpriseID
+        );
+
     }
 }

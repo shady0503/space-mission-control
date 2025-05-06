@@ -136,6 +136,16 @@ public class OperatorController {
         return operatorService.countByEnterpriseId(op.getEnterpriseId());
     }
 
+    @GetMapping("/search")
+    public List<OperatorResponse> search(@RequestParam String searchQuery){
+        return operatorService.search(searchQuery);
+    }
+
+    @PostMapping("/addToEnterprise")
+    public OperatorResponse addToEntreprise(@RequestParam UUID operatorId, @RequestParam UUID enterpriseId){
+        return operatorService.addToenterprise(operatorId, enterpriseId);
+    }
+
 
 
 

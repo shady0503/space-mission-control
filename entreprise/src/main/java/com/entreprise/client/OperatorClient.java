@@ -25,6 +25,6 @@ import com.entreprise.dto.OperatorDto;
      * @param enterpriseId UUID of the enterprise
      * @return list of OperatorDto
      */
-    @GetMapping("/api/operator/enterprise/{enterpriseId}/")
+    @GetMapping("/api/operator/enterprise/{enterpriseId}")
     List<OperatorDto> getByEnterprise(@PathVariable("enterpriseId") UUID enterpriseId);
 }

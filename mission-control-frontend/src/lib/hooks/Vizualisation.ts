@@ -2,7 +2,7 @@
  * Visualization React Hooks
  * Custom hooks for working with spacecraft telemetry visualization
  */
-
+'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { visualizationService } from '../services/visualizationService';
 import type {

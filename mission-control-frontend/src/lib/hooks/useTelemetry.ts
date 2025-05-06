@@ -1,3 +1,4 @@
+'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { API_CONFIG } from '../api/config';
 import { useWebSocket } from './useWebsocket';

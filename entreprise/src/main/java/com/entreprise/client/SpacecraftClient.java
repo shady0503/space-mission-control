@@ -8,10 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
 import java.util.UUID;
 
-
-// src/main/java/com/entreprise/client/SpacecraftClient.java
-
-
 @FeignClient(
         name = "spacecraft-service",
         url  = "${spring.cloud.openfeign.clients.spacecraft-service.url}"      // pulls from application.yml

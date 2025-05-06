@@ -53,7 +53,7 @@ export default function MissionDetailsPage({
   params: { id: string };
 }) {
   const router = useRouter();
-  const missionId = params.id;
+  const missionId = React.use(params).id;
 
   const {
     mission,
@@ -111,6 +111,8 @@ export default function MissionDetailsPage({
     return Math.round(((now - start) / (end - start)) * 100);
   };
 
+  const toLocalDateString = (date: Date) => date.toISOString().split('T')[0];
+
   // --- mission actions ---
   const handleUpdateMission = async () => {
     if (!mission) return;
@@ -119,11 +121,14 @@ export default function MissionDetailsPage({
         ...mission,
         name: editForm.name,
         description: editForm.description,
-        startDate: new Date(editForm.startDate).toISOString(),
-        endDate: new Date(editForm.endDate).toISOString(),
+        startDate: toLocalDateString(new Date(editForm.startDate)),
+        endDate: toLocalDateString(new Date(editForm.endDate)),
         status: editForm.status
       };
-      await missionService.updateMission(updated);
+      
+
+      console.log('Updating mission:', updated);
+      await missionService.updateMission(updated, user.id);
       setMission(updated);
       await Promise.all([refreshOperators(), refreshSpacecrafts()]);
       setEditDialogOpen(false);

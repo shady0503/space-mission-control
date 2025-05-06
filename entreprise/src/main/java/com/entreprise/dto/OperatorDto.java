@@ -1,6 +1,7 @@
 package com.entreprise.dto;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -10,14 +11,12 @@ public class OperatorDto {
     private UUID id;
     private String username;
     private String email;
-    private Instant createdAt;
+    private LocalDateTime createdAt;
     private UUID enterpriseId;
 
-    public OperatorDto(UUID enterpriseId) {
-        this.enterpriseId = enterpriseId;
+    public OperatorDto() {
     }
-
-    public OperatorDto(UUID id, String username, String email, String role, Instant createdAt, UUID enterpriseId) {
+    public OperatorDto(UUID id, String username, String email, String role, LocalDateTime createdAt, UUID enterpriseId) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -57,11 +56,11 @@ public class OperatorDto {
         this.email = email;
     }
 
-    public Instant getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Instant createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 }

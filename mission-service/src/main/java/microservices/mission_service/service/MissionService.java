@@ -33,7 +33,7 @@ public class MissionService {
 
     /* ---------- Mission creation ---------- */
 
-    public MissionDto create(MissionCreateRequest req) {
+    public MissionDto create(MissionCreateRequest req , UUID operatorId) {
         Mission m = new Mission();
         m.setEnterpriseId(req.enterpriseId());
         m.setName(req.name());
@@ -41,6 +41,13 @@ public class MissionService {
         m.setStartDate(req.startDate());
         m.setEndDate(req.endDate());
         missionRepo.save(m);
+
+        MissionOperator mo = new MissionOperator();
+        mo.setOperatorId(operatorId);
+        mo.setMission(missionRepo.getOne(m.getId()));
+        mo.setRole(MissionRole.ADMIN);
+
+
 
         publishEvent("MissionCreated", Map.of(
                 "missionId",    m.getId(),

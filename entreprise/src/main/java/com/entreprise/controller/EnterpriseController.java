@@ -94,6 +94,4 @@ public class EnterpriseController {
         List<SpacecraftDto> sc = spacecraftClient.getByEnterprise(id);
         return ResponseEntity.ok(sc);
     }
-
-
 }

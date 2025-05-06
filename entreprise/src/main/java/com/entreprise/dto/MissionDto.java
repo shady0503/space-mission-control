@@ -1,6 +1,8 @@
 package com.entreprise.dto;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -10,12 +12,12 @@ public class MissionDto {
     private UUID id;
     private String name;
     private String description;
-    private Instant startDate;
-    private Instant endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
     public MissionDto() {}
 
-    public MissionDto(UUID id, String name, String description, Instant startDate, Instant endDate) {
+    public MissionDto(UUID id, String name, String description, LocalDateTime startDate, LocalDateTime endDate) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -47,19 +49,19 @@ public class MissionDto {
         this.description = description;
     }
 
-    public Instant getStartDate() {
+    public LocalDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Instant startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
 
-    public Instant getEndDate() {
+    public LocalDateTime getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Instant endDate) {
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
 }

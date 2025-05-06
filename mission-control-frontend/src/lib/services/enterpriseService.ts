@@ -62,7 +62,7 @@ export const enterpriseService = {
   /**
    * Get a single enterprise by ID
    */
-  getEnterprise: async (enterpriseId: number): Promise<Enterprise> => {
+  getEnterprise: async (enterpriseId: string): Promise<Enterprise> => {
     return apiClient.get(
       API_CONFIG.ENDPOINTS.ENTERPRISE.GET_ONE.replace("{id}", enterpriseId.toString())
     );
@@ -93,7 +93,7 @@ export const enterpriseService = {
   /**
    * Delete an enterprise
    */
-  deleteEnterprise: async (enterpriseId: number): Promise<void> => {
+  deleteEnterprise: async (enterpriseId: string): Promise<void> => {
     return apiClient.delete(
       API_CONFIG.ENDPOINTS.ENTERPRISE.DELETE.replace("{id}", enterpriseId.toString())
     );
@@ -103,7 +103,7 @@ export const enterpriseService = {
    * Get all operators under an enterprise
    */
   getEnterpriseOperators: async (
-    enterpriseId: number
+    enterpriseId: string
   ): Promise<Operator[]> => {
     return apiClient.get(
       API_CONFIG.ENDPOINTS.ENTERPRISE.OPERATORS.replace("{id}", enterpriseId.toString())
@@ -114,7 +114,7 @@ export const enterpriseService = {
    * Get all spacecraft under an enterprise
    */
   getEnterpriseSpacecraft: async (
-    enterpriseId: number
+    enterpriseId: string
   ): Promise<Spacecraft[]> => {
     return apiClient.get(
       API_CONFIG.ENDPOINTS.ENTERPRISE.SPACECRAFT.replace("{id}", enterpriseId.toString())
@@ -125,8 +125,8 @@ export const enterpriseService = {
    * Get all missions under an enterprise
    */
   getEnterpriseMissions: async (
-    enterpriseId: number
-  ): Promise<number[]> => {
+    enterpriseId: string
+  ): Promise<any[]> => {
     return apiClient.get(
       API_CONFIG.ENDPOINTS.ENTERPRISE.MISSIONS.replace("{id}", enterpriseId.toString())
     );
