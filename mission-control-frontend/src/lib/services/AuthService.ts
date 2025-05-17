@@ -15,6 +15,7 @@ export interface RegistrationData {
   username: string;
   email: string;
   password: string;
+  enterpriseChoice: 'create_enterprise' | 'await_invitation';
 }
 
 export const authService = {
@@ -54,10 +55,17 @@ export const authService = {
    */
   register: async (data: RegistrationData): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.SIGNUP}`, {
+      // Extract enterpriseChoice from data
+      const { enterpriseChoice, ...userData } = data;
+      
+      // Add enterpriseChoice as a query parameter
+      const url = new URL(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.SIGNUP}`);
+      url.searchParams.append('enterpriseChoice', enterpriseChoice);
+      
+      const response = await fetch(url.toString(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(userData),
       });
       
       return response.ok;
@@ -75,7 +83,7 @@ export const authService = {
     try {
       // Try to call the backend logout endpoint
       try {
-        await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGOUT}`, {
+        await fetch(`${API_CONFIG.BASE_URL}/auth/logout`, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },

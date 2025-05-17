@@ -15,7 +15,7 @@ public class Spacecraft {
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "external_id", nullable = false, unique = true)
+    @Column(name = "external_id", nullable = false)
     private Long externalId;
 
     @Column(name = "external_name", nullable = false)

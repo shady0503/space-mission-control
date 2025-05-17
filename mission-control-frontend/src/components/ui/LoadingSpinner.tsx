@@ -7,7 +7,13 @@ const sizes = {
   large: 'h-12 w-12',
 };
 
-const LoadingSpinner = ({ size = 'medium', message, className }) => {
+interface LoadingSpinnerProps {
+  size?: 'small' | 'medium' | 'large';
+  message?: string;
+  className?: string;
+}
+
+const LoadingSpinner = ({ size = 'medium', message, className = '' }: LoadingSpinnerProps) => {
   const sizeClass = sizes[size] || sizes.medium;
   
   return (

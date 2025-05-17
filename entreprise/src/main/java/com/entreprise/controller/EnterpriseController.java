@@ -80,7 +80,6 @@ public class EnterpriseController {
         List<OperatorDto> ops = operatorClient.getByEnterprise(id);
         return ResponseEntity.ok(ops);
     }
-
     /** GET /api/enterprises/{id}/missions */
     @GetMapping("/{id}/missions")
     public ResponseEntity<List<MissionDto>> missions(@PathVariable UUID id) {

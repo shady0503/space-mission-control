@@ -76,11 +76,13 @@ export function useMissionData(missionId: string) {
             // Fetch all required data
             console.log("Fetching mission data...", missionId);
             const [missionData, operatorsData, spacecraftData, allOperatorsData] = await Promise.all([
-                missionService.getMission(missionId),
-                missionService.getMissionOperators(missionId),
+                missionService.getMission(missionId, user?.id),
+                missionService.getMissionOperators(missionId, user?.id),
                 spacecraftService.getSpacecraftByMission(missionId),
                 operatorService.getAllOperators(user?.enterpriseId || '')
             ]);
+
+            console.log("fetched operators", operatorsData);
 
             // Set state with fetched data
             setMission(missionData);
@@ -105,7 +107,7 @@ export function useMissionData(missionId: string) {
     // Refresh functions to reload specific data sets
     const refreshMission = async () => {
         try {
-            const data = await missionService.getMission(missionId);
+            const data = await missionService.getMission(missionId, user?.id);
             setMission(data);
         } catch (err) {
             console.error('Error refreshing mission:', err);
@@ -114,7 +116,7 @@ export function useMissionData(missionId: string) {
 
     const refreshOperators = async () => {
         try {
-            const data = await missionService.getMissionOperators(missionId);
+            const data = await missionService.getMissionOperators(missionId, user?.id);
             setOperators(data);
         } catch (err) {
             console.error('Error refreshing operators:', err);

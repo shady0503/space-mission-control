@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   useMissionData,
@@ -8,7 +8,7 @@ import {
   useMissionForms,
   useDialogState,
   Mission,
-  Satellite as Spacecraft,
+  Spacecraft,
   Operator,
   OperatorWithRole,
   Command
@@ -43,24 +43,26 @@ import {
   EditMissionDialog,
   DeleteMissionDialog,
   OperatorDialog,
-  IssueCommandDialog
+  IssueCommandDialog,
+  AddSpacecraftDialog
 } from '@/components/Mission/MissionDialogs';
+import { useAuth } from '@/lib/hooks';
 
-// --- component ---
 export default function MissionDetailsPage({
   params
 }: {
   params: { id: string };
 }) {
   const router = useRouter();
-  const missionId = params.id;
+  const missionId = React.use(params).id;
+  const { user } = useAuth(); // Get the current logged-in user
 
   const {
     mission,
-    operators,       // Array<OperatorWithRole>
-    spacecrafts,     // Array<Satellite>
-    commands,        // Array<Command>
-    allOperators,    // Array<Operator>
+    operators,
+    spacecrafts,
+    commands,
+    allOperators,
     loading,
     error,
     refreshMission,
@@ -70,7 +72,7 @@ export default function MissionDetailsPage({
     setMission
   } = useMissionData(missionId);
 
-  const { isAdmin, user } = useAdminStatus(operators);
+  const { isAdmin } = useAdminStatus(operators);
 
   const {
     editForm,
@@ -111,19 +113,79 @@ export default function MissionDetailsPage({
     return Math.round(((now - start) / (end - start)) * 100);
   };
 
+
+  interface SpacecraftTabProps {
+    spacecrafts: Spacecraft[];
+    isAdmin: boolean;
+    openCommandDialog: (spacecraftId: string) => void;
+    handleRemoveSpacecraft: (id: string) => void;
+    openAddSpacecraftDialog: () => void;
+  }
+
+  // Add this to your page.tsx file
+  // Add this state in your component
+  const [addSpacecraftDialogOpen, setAddSpacecraftDialogOpen] = useState(false);
+  const [newSpacecraft, setNewSpacecraft] = useState({
+    externalId: '',
+    externalName: '',
+    type: 'SATELLITE',
+    displayName: ''
+  });
+
+  // Add this function to handle adding a spacecraft
+  const handleAddSpacecraft = async () => {
+    if (!mission) return;
+
+    try {
+      // Convert externalId to a number
+      const spacecraftData = {
+        externalId: parseInt(newSpacecraft.externalId, 10),
+        externalName: newSpacecraft.externalName,
+        displayName: newSpacecraft.displayName,
+        type: newSpacecraft.type,
+        missionId: mission.id,
+        enterpriseId: mission.enterpriseId
+      };
+
+      await spacecraftService.createSpacecraft(spacecraftData, user.id);
+      setAddSpacecraftDialogOpen(false);
+      setNewSpacecraft({
+        externalId: '',
+        externalName: '',
+        type: 'SATELLITE',
+        displayName: ''
+      });
+      await refreshSpacecrafts();
+    } catch (err) {
+      console.error('Error adding spacecraft:', err);
+    }
+  };
+
+
+
+  // Format ISO date string for API
+  const formatISODate = (date: string): string => {
+    // If the date already has time component, return it
+    if (date.includes('T')) return date;
+    // Otherwise add time component
+    return `${date}T00:00:00`;
+  };
+
   // --- mission actions ---
   const handleUpdateMission = async () => {
     if (!mission) return;
     try {
-      const updated: Mission = {
+      const updated = {
         ...mission,
         name: editForm.name,
         description: editForm.description,
-        startDate: new Date(editForm.startDate).toISOString(),
-        endDate: new Date(editForm.endDate).toISOString(),
+        startDate: formatISODate(editForm.startDate),
+        endDate: formatISODate(editForm.endDate),
         status: editForm.status
       };
-      await missionService.updateMission(updated);
+
+      console.log('Updating mission:', updated);
+      await missionService.updateMission(updated, user.id);
       setMission(updated);
       await Promise.all([refreshOperators(), refreshSpacecrafts()]);
       setEditDialogOpen(false);
@@ -135,7 +197,7 @@ export default function MissionDetailsPage({
   const handleDeleteMission = async () => {
     if (!mission) return;
     try {
-      await missionService.deleteMission(mission.id);
+      await missionService.deleteMission(mission.id, user.id);
       router.push('/missions');
     } catch (err) {
       console.error('Error deleting mission:', err);
@@ -143,28 +205,13 @@ export default function MissionDetailsPage({
   };
 
   // --- operator actions ---
-  const handleAddOperator = async () => {
+  const handleUpsertOperator = async () => {
     if (!mission || !newOperator.operatorId) return;
     try {
-      await missionService.assignOperator(
+      await missionService.upsertOperator(
         mission.id,
         newOperator.operatorId,
-        newOperator.role
-      );
-      setOperatorDialogOpen(false);
-      setNewOperator({ operatorId: '', role: 'VIEWER' });
-      await refreshOperators();
-    } catch (err) {
-      console.error('Error adding operator:', err);
-    }
-  };
-
-  const handleUpdateOperator = async () => {
-    if (!mission || !newOperator.operatorId) return;
-    try {
-      await missionService.updateOperator(
-        mission.id,
-        newOperator.operatorId,
+        user.id,
         newOperator.role
       );
       setOperatorDialogOpen(false);
@@ -179,7 +226,8 @@ export default function MissionDetailsPage({
   const handleRemoveOperator = async (operatorId: string) => {
     if (!mission) return;
     try {
-      await missionService.removeOperator(mission.id, operatorId);
+      // Call upsertOperator with no role to remove the operator
+      await missionService.upsertOperator(mission.id, operatorId, user.id);
       await refreshOperators();
     } catch (err) {
       console.error('Error removing operator:', err);
@@ -196,7 +244,7 @@ export default function MissionDetailsPage({
         missionId: mission.id,
         commandType: newCommand.commandType,
         payload: JSON.stringify(newCommand.payload)
-      });
+      }, user.id);
       setCommandDialogOpen(false);
       setNewCommand({ spacecraftId: '', commandType: '', payload: {} });
       await refreshCommands();
@@ -207,7 +255,7 @@ export default function MissionDetailsPage({
 
   const handleExecuteCommand = async (command: Command) => {
     try {
-      await commandService.executeCommand(command.id);
+      await commandService.executeCommand(command.id, user.id);
       await refreshCommands();
     } catch (err) {
       console.error('Error executing command:', err);
@@ -220,7 +268,7 @@ export default function MissionDetailsPage({
       await spacecraftService.updateSpacecraft({
         id: spacecraftId,
         missionId: '' // detach by clearing missionId
-      });
+      }, user.id);
       await refreshSpacecrafts();
     } catch (err) {
       console.error('Error detaching spacecraft:', err);
@@ -233,10 +281,10 @@ export default function MissionDetailsPage({
     setCommandDialogOpen(true);
   };
 
-  const openEditOperatorDialog = (op: OperatorWithRole) => {
+  const openEditOperatorDialog = (operator: Operator, role: string) => {
     setNewOperator({
-      operatorId: op.operator.id,
-      role: op.role
+      operatorId: operator.id,
+      role
     });
     setIsEditingOperator(true);
     setOperatorDialogOpen(true);
@@ -323,20 +371,20 @@ export default function MissionDetailsPage({
             isAdmin={isAdmin}
             openCommandDialog={openCommandDialog}
             handleRemoveSpacecraft={handleRemoveSpacecraft}
+            openAddSpacecraftDialog={() => setAddSpacecraftDialogOpen(true)}
           />
 
           <TeamTab
             operators={operators}
             user={user}
             isAdmin={isAdmin}
-            openEditOperatorDialog={openEditOperatorDialog}
+            openEditOperatorDialog={(operator, role) => openEditOperatorDialog(operator, role)}
             handleRemoveOperator={handleRemoveOperator}
             openAddOperatorDialog={() => {
               setIsEditingOperator(false);
               setNewOperator({ operatorId: '', role: 'VIEWER' });
               setOperatorDialogOpen(true);
             }}
-            allOperators={allOperators}
           />
 
           <CommandsTab
@@ -380,8 +428,8 @@ export default function MissionDetailsPage({
         allOperators={allOperators}
         operators={operators}
         isEditingOperator={isEditingOperator}
-        handleAddOperator={handleAddOperator}
-        handleUpdateOperator={handleUpdateOperator}
+        handleAddOperator={handleUpsertOperator}
+        handleUpdateOperator={handleUpsertOperator}
       />
 
       <IssueCommandDialog
@@ -391,6 +439,16 @@ export default function MissionDetailsPage({
         setNewCommand={setNewCommand}
         spacecrafts={spacecrafts}
         handleIssueCommand={handleIssueCommand}
+      />
+
+      <AddSpacecraftDialog
+        open={addSpacecraftDialogOpen}
+        onOpenChange={setAddSpacecraftDialogOpen}
+        missionId={mission.id}
+        enterpriseId={mission.enterpriseId}
+        handleAddSpacecraft={handleAddSpacecraft}
+        newSpacecraft={newSpacecraft}
+        setNewSpacecraft={setNewSpacecraft}
       />
     </div>
   );

@@ -93,7 +93,7 @@ export default function SatelliteDetailPage() {
 
       // Get spacecraft mission
       if (spacecraftData.missionId) {
-        const missionData = await missionService.getMission(spacecraftData.missionId);
+        const missionData = await missionService.getMission(spacecraftData.missionId, user?.id);
         setMission(missionData);
       }
 

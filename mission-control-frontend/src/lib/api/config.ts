@@ -44,6 +44,8 @@ export const API_CONFIG = {
       UPDATE_PROFILE: '/api/operator', // via PUT
       UPDATE_ROLE: '/api/operator/update-role', // via PUT
       REMOVE_FROM_MISSION: '/api/operator/remove/{missionId}/{operatorId}', // via DELETE
+      SEARCH: '/api/operator/search',
+      ADD_TO_ENTERPRISE: '/api/operator/addToEnterprise', // via POST @RequestParam "enterpriseId", "operatorId"
     },
     DASHBOARD: {
       SUMMARY: '/api/dashboard/summary',

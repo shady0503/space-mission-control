@@ -21,7 +21,7 @@ export function useAuthRedirect({
   protectedRoutes = ['/dashboard', '/missions', '/telemetry', '/observatory', '/discoveries', '/globes', '/profile', '/settings'],
   authRoutes = ['/login', '/signup', '/auth/callback'],
   fallbackUrl = '/login',
-  authenticatedRedirect = '/telemetry'
+  authenticatedRedirect = '/dashboard'
 }: AuthRedirectOptions = {}) {
   const { data: session, status } = useSession();
   const router = useRouter();

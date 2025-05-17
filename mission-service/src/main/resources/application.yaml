@@ -1,0 +1,29 @@
+server:
+  port: 8080
+auth-service:
+  url: http://auth-service:8080
+  application:
+    name: mission-service
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-mission:5432/mission_db
+    username: mission_user
+    password: mission_pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  kafka:
+    bootstrap-servers: kafka:9092
+
+    producer:
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# --------------------------------------------------------------------------- #
+# Full service mesh: every service can call others if needed
+# --------------------------------------------------------------------------- #
+
+

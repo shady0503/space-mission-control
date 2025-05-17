@@ -78,12 +78,12 @@ export default function SatellitesOverviewPage() {
   const fetchMissions = useCallback(async () => {
     try {
       // Use missionService.getMissions to get all missions the user has access to
-      const missions = await missionService.getMissions();
+      const missions = await missionService.getMissions({}, user?.id);
       setAvailableMissions(missions);
     } catch (error) {
       console.error('Error fetching missions:', error);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchSpacecraft();

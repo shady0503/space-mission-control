@@ -118,7 +118,7 @@ class WebSocketClient {
       // Add user data parameters if provided
       if (userData) {
         Object.entries(userData).forEach(([key, value]) => {
-          if (value) {
+          if (value !== undefined && value !== null) {
             urlWithParams.searchParams.append(key, value.toString());
           }
         });

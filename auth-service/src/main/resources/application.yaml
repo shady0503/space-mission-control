@@ -1,0 +1,127 @@
+###############################################################################
+#  AUTH-SERVICE  (operator management + JWT/OAuth2 + Feign to mission-service)
+###############################################################################
+
+server:
+  port: 8080                          # HTTP port for this micro-service
+spring:
+  application:
+    name: auth-service
+
+  # ---------- Data Source ----------
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+
+  # ---------- JPA / Hibernate ----------
+  jpa:
+    hibernate:
+      ddl-auto: update          # dev-friendly; use 'validate' or migrations in prod
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  # ---------- OpenFeign (client → mission-service) ----------
+  cloud:
+    openfeign:
+      hystrix:
+        enabled: true
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 5000
+            loggerLevel: FULL
+      circuitbreaker:
+        enabled: true
+
+  # ---------- OAuth2 client settings ----------
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid,email,profile
+
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - user:email
+              - read:user
+
+
+        provider:
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+            user-name-attribute: login
+
+# --------------------------------------------------------------------------- #
+#  Custom application properties                                             #
+# --------------------------------------------------------------------------- #
+app:
+  cors:
+    allowed-origin: "*"           # SPA origin for CORS
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION}
+  kafka:
+    topic: iam.operators     # event topic for OperatorCreated / TeamCreated ?
+  frontend:
+    url: ${FRONTEND_URL}
+
+# --------------------------------------------------------------------------- #
+#  Remote service locations (used by Feign clients)                           #
+# --------------------------------------------------------------------------- #
+auth:
+  service:
+    url: ${AUTH_SERVICE_URL}
+
+enterprise:
+  service:
+    url: ${ENTERPRISE_SERVICE_URL}
+
+mission:
+  service:
+    url: ${MISSION_SERVICE_URL}
+
+spacecraft:
+  service:
+    url: ${SPACECRAFT_SERVICE_URL}
+
+telemetry:
+  service:
+    url: ${TELEMETRY_SERVICE_URL}
+
+gateway:
+  service:
+    url: ${GATEWAY_SERVICE_URL}
+
+# --------------------------------------------------------------------------- #
+#  Kafka (if auth-service needs to publish IAM events)                        #
+# --------------------------------------------------------------------------- #
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  producer:
+    acks: all
+  consumer:
+    group-id: "${spring.application.name}"
+    auto-offset-reset: earliest
+
+# --------------------------------------------------------------------------- #
+#  Logging                                                                    #
+# --------------------------------------------------------------------------- #
+logging:
+  level:
+    root: INFO
+    microservices.auth_service: DEBUG   # our own code

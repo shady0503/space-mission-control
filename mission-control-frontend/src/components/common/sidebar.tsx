@@ -12,7 +12,9 @@ import {
   User, 
   Settings,
   LogOut,
-  Satellite
+  Satellite,
+  Building,
+  Activity
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
@@ -42,10 +44,10 @@ export default function Sidebar() {
   // Navigation items
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Enterprise', href: '/enterprise', icon: Building},
     { name: 'Missions', href: '/missions', icon: Rocket },
     { name: 'Spacecrafts', href: '/spacecrafts', icon: Satellite },
-    { name: 'Mars', href: '/mars', icon: Globe },
-    { name: 'Telemetry', href: '/telemetry', icon: Telescope },
+    { name: 'Telemetry', href: '/telemetry', icon: Activity },
   ];
 
   // Account items

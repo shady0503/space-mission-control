@@ -1,0 +1,21 @@
+
+services:
+  # ----- Zookeeper (Kafka dependency) -----
+
+  # ----- Kafka broker -----
+  # ----- PostgreSQL for mission-svc -----
+  postgres:
+    image: postgres:17.4
+    restart: always
+    environment:
+      POSTGRES_DB: mission_db
+      POSTGRES_USER: mission_user
+      POSTGRES_PASSWORD: mission_pass
+    ports:
+      - '5432:5432'
+    volumes:
+      - mission-data:/var/lib/postgresql/data
+
+  # ----- mission-svc application -----
+volumes:
+  mission-data:

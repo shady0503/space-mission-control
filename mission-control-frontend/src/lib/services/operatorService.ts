@@ -62,6 +62,25 @@ JSON.stringify(        {
         operatorId,
         role,
       });
+  },
+
+  /**
+   * search for operators by username or email
+   * @param query Search query
+   * @returns List of matching operators
+   */
+  searchOperators: async (query: string): Promise<Operator[]> => {
+    return apiClient.get(`${API_CONFIG.ENDPOINTS.OPERATOR.SEARCH}?searchQuery=${query}`);
+  },
+
+  /**
+   * Add an operator to an enterprise
+   * @param operatorId Operator ID
+   * @param enterpriseId Enterprise ID
+   * @returns Updated operator details
+   */
+  addOperatorToEnterprise: async (operatorId: string, enterpriseId: string): Promise<Operator> => {
+    return apiClient.post(`${API_CONFIG.ENDPOINTS.OPERATOR.ADD_TO_ENTERPRISE}?enterpriseId=${enterpriseId}&operatorId=${operatorId}`);
   }
 
 };

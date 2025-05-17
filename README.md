@@ -49,7 +49,6 @@ This system is built with **Spring Boot (Java) for backend services** and deploy
 ### **Security & Authentication**
 | Component                   | Technology Stack |
 |-----------------------------|-----------------|
-| **User Authentication**     | Keycloak (OAuth2) |
 | **API Security**            | Spring Security (JWT-based authentication) |
 
 ### **AI & Machine Learning**

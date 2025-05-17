@@ -12,32 +12,35 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, Clock, Plus, Rocket, Users, RotateCw } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { useAuth } from '@/lib/hooks';
 
 export default function MissionsOverviewPage() {
   const router = useRouter();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const {user} = useAuth();
   const [newMission, setNewMission] = useState({
     name: '',
     description: '',
-    startDate: '',
-    endDate: '',
-    status: true
+    startDate: '',      // "YYYY-MM-DD"
+    endDate: '',        // "YYYY-MM-DD"
+    enterpriseId: ''    // <- add this
   });
+  
 
   // Use useCallback to memoize functions
   const fetchMissions = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await missionService.getMissions();
+      const data = await missionService.getMissions({}, user?.id);
       setMissions(data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching missions:', error);
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchMissions();
@@ -46,20 +49,21 @@ export default function MissionsOverviewPage() {
   const handleCreateMission = useCallback(async () => {
     try {
       await missionService.createMission({
-        name: newMission.name,
+        name:        newMission.name,
         description: newMission.description,
-        startDate: new Date(newMission.startDate).toISOString(),
-        endDate: new Date(newMission.endDate).toISOString(),
-        status: newMission.status
-      });
-      
+        startDate:   newMission.startDate,    // e.g. "2025-05-01"
+        endDate:     newMission.endDate,      // e.g. "2026-03-15"
+        enterpriseId: user.enterpriseId,
+        status: true
+      }, user.id);
+  
       setCreateDialogOpen(false);
       resetNewMission();
       fetchMissions();
     } catch (error) {
       console.error('Error creating mission:', error);
     }
-  }, [newMission, fetchMissions]);
+  }, [newMission, fetchMissions, user]);
 
   const resetNewMission = useCallback(() => {
     setNewMission({
