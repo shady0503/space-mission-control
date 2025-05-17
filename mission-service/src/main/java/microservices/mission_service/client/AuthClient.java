@@ -23,12 +23,11 @@ public interface AuthClient {
     MissionOperatorDto updateOperatorRole(@RequestBody OperatorRoleUpdateRequest req);
 
     /** Remove an operator from a mission */
-    @DeleteMapping("/api/operator/missions/{missionId}/operators/{operatorId}")
+    @DeleteMapping("/api/operator/remove/{missionId}/{operatorId}")
     void removeOperatorFromMission(
             @PathVariable UUID missionId,
             @PathVariable UUID operatorId
     );
-
     /** Fetch an operator’s details */
     @GetMapping("/api/operator/{id}")
     OperatorDto getOperator(@PathVariable UUID id);

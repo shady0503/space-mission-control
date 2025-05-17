@@ -54,7 +54,7 @@ export default function MissionsOverviewPage() {
         startDate:   newMission.startDate,    // e.g. "2025-05-01"
         endDate:     newMission.endDate,      // e.g. "2026-03-15"
         enterpriseId: user.enterpriseId 
-      });
+      }, user.id);
   
       setCreateDialogOpen(false);
       resetNewMission();

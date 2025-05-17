@@ -170,25 +170,18 @@ public class MissionService {
 
     /* ---------- Operator unassign ---------- */
 
-    public void unassignIfAdmin(UUID missionId,
-                                UUID adminOperatorId,
-                                UUID operatorId)
-            throws ChangeSetPersister.NotFoundException, AccessDeniedException {
-
+    public void unassignIfAdmin(UUID missionId, UUID adminOperatorId, UUID operatorToRemoveId) throws AccessDeniedException, ChangeSetPersister.NotFoundException {
+        // First verify the admin operator has admin rights
         verifyAdmin(missionId, adminOperatorId);
 
-        MissionOperator mo = mopRepo.findByMissionIdAndOperatorId(missionId, operatorId)
-                .orElseThrow(ChangeSetPersister.NotFoundException::new);
-
-        mopRepo.delete(mo);
-        logActivity(mo.getMission(), "OperatorUnassigned", Map.of(
-                "missionId", missionId,
-                "operatorId", operatorId
-        ));
-        publishEvent("OperatorUnassigned", Map.of(
-                "missionId", missionId,
-                "operatorId", operatorId
-        ));
+        // Then try to find and remove the operator, handling the case where they might not exist
+        mopRepo
+                .findByMissionIdAndOperatorId(missionId, operatorToRemoveId)
+                .ifPresentOrElse(
+                        mopRepo::delete,
+                        () -> {
+                        }
+                );
     }
 
     /* ---------- Private helpers ---------- */

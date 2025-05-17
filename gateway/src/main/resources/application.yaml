@@ -9,6 +9,7 @@ spring:
     gateway:
       default-filters:
         - PreserveHostHeader
+        - AddRequestHeader=Authorization,
       routes:
         - id: auth
           uri: http://auth-service:8080

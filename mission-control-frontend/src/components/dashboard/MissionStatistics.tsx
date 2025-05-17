@@ -81,10 +81,6 @@ const MissionStatistics: React.FC<MissionStatisticsProps> = ({
               <Rocket className="h-6 w-6 text-indigo-400" />
               <span>Missions</span>
             </div>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md flex items-center space-x-2">
-              <Plus className="h-4 w-4" />
-              <span>Create Mission</span>
-            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 flex flex-col items-center justify-center">

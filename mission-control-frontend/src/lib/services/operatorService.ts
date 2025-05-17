@@ -79,11 +79,8 @@ JSON.stringify(        {
    * @param enterpriseId Enterprise ID
    * @returns Updated operator details
    */
-  addOperatorToEnterprise: async (operatorId: number, enterpriseId: number): Promise<Operator> => {
-    return apiClient.post(`${API_CONFIG.ENDPOINTS.OPERATOR.ADD_TO_ENTERPRISE}`, {
-      operatorId,
-      enterpriseId,
-    });
+  addOperatorToEnterprise: async (operatorId: string, enterpriseId: string): Promise<Operator> => {
+    return apiClient.post(`${API_CONFIG.ENDPOINTS.OPERATOR.ADD_TO_ENTERPRISE}?enterpriseId=${enterpriseId}&operatorId=${operatorId}`);
   }
 
 };

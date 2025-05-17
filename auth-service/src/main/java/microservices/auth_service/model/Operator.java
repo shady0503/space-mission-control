@@ -18,7 +18,7 @@ public class Operator {
     @Column(nullable = false, unique = true, length = 255)
     private String username;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(unique = true, length = 255)
     private String email;
 
     @Column(name = "hashed_password", nullable = false, length = 255)

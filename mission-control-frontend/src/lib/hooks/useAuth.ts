@@ -17,6 +17,7 @@ export interface RegistrationData {
   username: string;
   email: string;
   password: string;
+  enterpriseChoice: 'create_enterprise' | 'await_invitation';
   // Add new optional fields for registration
   firstName?: string;
   lastName?: string;
@@ -49,8 +50,6 @@ export const useAuth = () => {
   // Use Next.js session with minimal configuration
   const { data: session, status } = useSession({
     required: false,
-    // Only trigger manual refetch every 5 minutes
-    refetchInterval: 5 * 60, // 5 minutes in seconds
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -182,7 +181,7 @@ export const useAuth = () => {
           setError("Invalid credentials");
         } else {
           // Check if we have a redirect path
-          let redirectPath = "/dashboard";
+          const redirectPath = "/dashboard";
           // if (typeof window !== 'undefined') {
           //   const storedRedirect = sessionStorage.getItem('redirectAfterLogin');
           //   if (storedRedirect) {
@@ -212,15 +211,19 @@ export const useAuth = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Direct API call for registration with all user fields
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/signup`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }
-      );
+      // Extract enterpriseChoice from data
+      const { enterpriseChoice, ...userData } = data;
+      
+      // Add enterpriseChoice as a query parameter
+      const url = new URL(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/signup`);
+      url.searchParams.append('enterpriseChoice', enterpriseChoice);
+      
+      // Direct API call for registration with user fields in body
+      const response = await fetch(url.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
 
       const success = response.ok;
 

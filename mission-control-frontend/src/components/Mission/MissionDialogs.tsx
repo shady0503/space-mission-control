@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Mission, Operator, Spacecraft } from '@/lib/api/hooks/MissionHooks';
+import { Mission, Operator, Spacecraft, OperatorWithRole } from '@/lib/api/hooks/MissionHooks';
 
 interface EditMissionDialogProps {
   open: boolean;
@@ -17,7 +17,7 @@ interface EditMissionDialogProps {
     description: string;
     startDate: string;
     endDate: string;
-    status: boolean;
+    status: string;
   };
   setEditForm: (form: any) => void;
   handleUpdateMission: () => Promise<void>;
@@ -62,7 +62,7 @@ export function EditMissionDialog({
               <Input
                 id="startDate"
                 type="date"
-                value={editForm.startDate}
+                value={editForm.startDate.split('T')[0]} // Handle ISO date format
                 onChange={e => setEditForm({ ...editForm, startDate: e.target.value })}
                 className="bg-gray-700 border border-gray-600 text-white"
               />
@@ -72,7 +72,7 @@ export function EditMissionDialog({
               <Input
                 id="endDate"
                 type="date"
-                value={editForm.endDate}
+                value={editForm.endDate.split('T')[0]} // Handle ISO date format
                 onChange={e => setEditForm({ ...editForm, endDate: e.target.value })}
                 className="bg-gray-700 border border-gray-600 text-white"
               />
@@ -81,18 +81,20 @@ export function EditMissionDialog({
           <div className="grid gap-2">
             <Label htmlFor="status" className="text-gray-300">Status</Label>
             <Select
-              value={editForm.status ? "active" : "inactive"}
+              value={editForm.status}
               onValueChange={(value) => setEditForm({
                 ...editForm,
-                status: value === "active"
+                status: value
               })}
             >
               <SelectTrigger className="bg-gray-700 border border-gray-600 text-white">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border border-gray-700 text-white">
-                <SelectItem value="active" className="hover:bg-gray-600">Active</SelectItem>
-                <SelectItem value="inactive" className="hover:bg-gray-600">Inactive</SelectItem>
+                <SelectItem value="PLANNING" className="hover:bg-gray-600">Planning</SelectItem>
+                <SelectItem value="ACTIVE" className="hover:bg-gray-600">Active</SelectItem>
+                <SelectItem value="COMPLETED" className="hover:bg-gray-600">Completed</SelectItem>
+                <SelectItem value="SUSPENDED" className="hover:bg-gray-600">Suspended</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -163,7 +165,7 @@ export function DeleteMissionDialog({
   );
 }
 
-interface AddOperatorDialogProps {
+interface OperatorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   newOperator: {
@@ -172,7 +174,7 @@ interface AddOperatorDialogProps {
   };
   setNewOperator: (operator: any) => void;
   allOperators: Operator[];
-  operators: Operator[];
+  operators: OperatorWithRole[];
   isEditingOperator: boolean;
   handleAddOperator: () => Promise<void>;
   handleUpdateOperator: () => Promise<void>;
@@ -188,10 +190,15 @@ export function OperatorDialog({
   isEditingOperator,
   handleAddOperator,
   handleUpdateOperator
-}: AddOperatorDialogProps) {
+}: OperatorDialogProps) {
   const dialogTitle = isEditingOperator ? 'Update Operator Role' : 'Add Operator to Mission';
   const actionButtonText = isEditingOperator ? 'Update Role' : 'Add to Mission';
   const handleAction = isEditingOperator ? handleUpdateOperator : handleAddOperator;
+
+  // Filter out operators already in the mission
+  const availableOperators = allOperators.filter(op => 
+    !operators.some(mop => mop.operator.id === op.id)
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -214,18 +221,15 @@ export function OperatorDialog({
                   <SelectValue placeholder="Select an operator" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border border-gray-700 text-white">
-                  {allOperators
-                    .filter(op => !operators.some((mop) => mop.id === op.id))
-                    .map((op) => (
-                      <SelectItem
-                        key={op.id}
-                        value={op.id.toString()}
-                        className="hover:bg-gray-600"
-                      >
-                        {op.username} ({op.email})
-                      </SelectItem>
-                    ))
-                  }
+                  {availableOperators.map((op) => (
+                    <SelectItem
+                      key={op.id}
+                      value={op.id.toString()}
+                      className="hover:bg-gray-600"
+                    >
+                      {op.username} ({op.email})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -330,7 +334,7 @@ export function IssueCommandDialog({
                     value={spacecraft.id.toString()}
                     className="hover:bg-gray-600"
                   >
-                    {spacecraft.spacecraftName || spacecraft.name}
+                    {spacecraft.displayName || spacecraft.externalName}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -397,6 +401,118 @@ export function IssueCommandDialog({
             className="bg-purple-600 hover:bg-purple-700 text-white disabled:bg-purple-900"
           >
             Issue Command
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+
+}
+
+interface AddSpacecraftDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  missionId: string;
+  enterpriseId: string;
+  handleAddSpacecraft: () => Promise<void>;
+  newSpacecraft: {
+    externalId: string;
+    externalName: string;
+    type: string;
+    displayName: string;
+  };
+  setNewSpacecraft: (spacecraft: any) => void;
+}
+
+export function AddSpacecraftDialog({
+  open,
+  onOpenChange,
+  missionId,
+  enterpriseId,
+  handleAddSpacecraft,
+  newSpacecraft,
+  setNewSpacecraft
+}: AddSpacecraftDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-gray-800 border border-gray-700 text-white">
+        <DialogHeader>
+          <DialogTitle className="text-blue-300">Add Spacecraft</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="externalId" className="text-gray-300">External ID</Label>
+            <Input
+              id="externalId"
+              type="number"
+              value={newSpacecraft.externalId}
+              onChange={e => setNewSpacecraft({ ...newSpacecraft, externalId: e.target.value })}
+              className="bg-gray-700 border border-gray-600 text-white"
+              placeholder="25544"
+            />
+            <p className="text-xs text-gray-400">Unique identifier (e.g., NORAD ID)</p>
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="externalName" className="text-gray-300">External Name</Label>
+            <Input
+              id="externalName"
+              value={newSpacecraft.externalName}
+              onChange={e => setNewSpacecraft({ ...newSpacecraft, externalName: e.target.value })}
+              className="bg-gray-700 border border-gray-600 text-white"
+              placeholder="ISS"
+            />
+            <p className="text-xs text-gray-400">Official designation</p>
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="displayName" className="text-gray-300">Display Name</Label>
+            <Input
+              id="displayName"
+              value={newSpacecraft.displayName}
+              onChange={e => setNewSpacecraft({ ...newSpacecraft, displayName: e.target.value })}
+              className="bg-gray-700 border border-gray-600 text-white"
+              placeholder="International Space Station"
+            />
+            <p className="text-xs text-gray-400">Name shown in the interface</p>
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="type" className="text-gray-300">Spacecraft Type</Label>
+            <Select
+              value={newSpacecraft.type}
+              onValueChange={(value) => setNewSpacecraft({
+                ...newSpacecraft,
+                type: value
+              })}
+            >
+              <SelectTrigger className="bg-gray-700 border border-gray-600 text-white">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border border-gray-700 text-white">
+                <SelectItem value="SATELLITE" className="hover:bg-gray-600">Satellite</SelectItem>
+                <SelectItem value="ROVER" className="hover:bg-gray-600">Rover</SelectItem>
+                <SelectItem value="STATION" className="hover:bg-gray-600">Station</SelectItem>
+                <SelectItem value="LANDER" className="hover:bg-gray-600">Lander</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleAddSpacecraft}
+            disabled={!newSpacecraft.externalId || !newSpacecraft.externalName || !newSpacecraft.displayName || !newSpacecraft.type}
+            className="bg-purple-600 hover:bg-purple-700 text-white disabled:bg-purple-900"
+          >
+            Add Spacecraft
           </Button>
         </DialogFooter>
       </DialogContent>

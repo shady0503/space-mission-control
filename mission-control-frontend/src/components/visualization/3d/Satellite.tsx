@@ -337,6 +337,8 @@ const Satellite: React.FC<SatelliteProps> = ({
       ref={groupRef} 
       onClick={() => groupRef.current && onClick({ name, details, object: groupRef.current })}
       visible={currentPosition !== null || lastPositionRef.current !== null}
+      onPointerOver={() => { document.body.style.cursor = 'pointer'; }}
+      onPointerOut={() => { document.body.style.cursor = 'auto'; }}
     >
       <group ref={modelRef} scale={scale} />
       {/* A small sphere to help with click/visibility */}

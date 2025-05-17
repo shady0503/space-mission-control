@@ -47,7 +47,6 @@ export default function Sidebar() {
     { name: 'Enterprise', href: '/enterprise', icon: Building},
     { name: 'Missions', href: '/missions', icon: Rocket },
     { name: 'Spacecrafts', href: '/spacecrafts', icon: Satellite },
-    { name: 'Mars', href: '/mars', icon: Globe },
     { name: 'Telemetry', href: '/telemetry', icon: Activity },
   ];
 

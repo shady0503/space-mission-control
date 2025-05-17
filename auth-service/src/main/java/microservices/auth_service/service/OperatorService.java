@@ -53,12 +53,18 @@ public class OperatorService {
 
         op = operatorRepo.save(op);
 
+        if(req.email()==null) {
+            op.setEmail("@Null.com");
+        }
+
         events.publishEvent(
                 new OperatorCreatedEvent(this, op.getId(), op.getUsername(), op.getEmail())
         );
 
         return op;
     }
+
+
 
     public String authenticate(String identifier, String rawPassword) {
         Operator op = operatorRepo.findByUsername(identifier)
@@ -115,7 +121,8 @@ public class OperatorService {
             String username = extractUsername(attributes, provider);
             System.out.println("Extracted username: " + username);
 
-            String email = (String) attributes.get("email");
+            String email = Optional.ofNullable((String) attributes.get("email"))
+                    .orElse(username + "@users.noreply.github.com");
             System.out.println("Extracted email: " + email);
 
             Optional<Operator> existingOp = operatorRepo.findByUsername(username);
@@ -123,16 +130,11 @@ public class OperatorService {
 
             if (existingOp.isPresent()) {
                 Operator op = existingOp.get();
-                System.out.println("Existing user found: " + op.getId() + " - " + op.getUsername());
-
-                if (email != null && !email.equals(op.getEmail())) {
-                    System.out.println("Updating email from " + op.getEmail() + " to " + email);
+                if (!email.equals(op.getEmail())) {
                     op.setEmail(email);
                     operatorRepo.save(op);
-                    System.out.println("User updated successfully");
                 }
             } else {
-                System.out.println("Creating new user with username: " + username);
                 Operator newOp = new Operator();
                 newOp.setUsername(username);
                 newOp.setEmail(email);

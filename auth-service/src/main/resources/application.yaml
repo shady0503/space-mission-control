@@ -54,7 +54,10 @@ spring:
             client-id: ${GITHUB_CLIENT_ID}
             client-secret: ${GITHUB_CLIENT_SECRET}
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope: user:email
+            scope:
+              - user:email
+              - read:user
+
 
         provider:
           github:
@@ -84,9 +87,9 @@ auth:
   service:
     url: ${AUTH_SERVICE_URL}
 
-entreprise:
+enterprise:
   service:
-    url: ${ENTREPRISE_SERVICE_URL}
+    url: ${ENTERPRISE_SERVICE_URL}
 
 mission:
   service:

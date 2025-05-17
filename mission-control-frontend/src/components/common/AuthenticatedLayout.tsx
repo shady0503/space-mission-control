@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/common/sidebar';
 import useAuthRedirect from '@/lib/hooks/useAuthRedirect';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import EnterpriseCheck from '@/components/common/EnterpriseCheck';
 
 const publicRoutes = ['/', '/login', '/signup', '/auth/callback'];
 
@@ -32,16 +33,18 @@ const AuthenticatedLayout = ({ children }: { children: ReactNode }) => {
   // For protected routes, show the layout with sidebar when authenticated
   if (isAuthenticated) {
     return (
-      <div className="flex h-screen w-full overflow-hidden bg-[#0f1628]">
-        <div className="sidebar-container">
-          <Sidebar />
-        </div>
-        <main className="flex-1 overflow-auto w-full max-w-[calc(100%-16rem)] ml-auto lg:max-w-[calc(100%-5rem)]">
-          <div className="h-full">
-            {children}
+      <EnterpriseCheck>
+        <div className="flex h-screen w-full overflow-hidden bg-[#0f1628]">
+          <div className="sidebar-container">
+            <Sidebar />
           </div>
-        </main>
-      </div>
+          <main className="flex-1 overflow-auto w-full max-w-[calc(100%-16rem)] ml-auto lg:max-w-[calc(100%-5rem)]">
+            <div className="h-full">
+              {children}
+            </div>
+          </main>
+        </div>
+      </EnterpriseCheck>
     );
   }
 
