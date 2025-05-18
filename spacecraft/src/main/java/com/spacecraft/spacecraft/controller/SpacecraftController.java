@@ -157,6 +157,11 @@ public class SpacecraftController {
                 .toList();
     }
 
+    @GetMapping("{externalId}")
+    public Spacecraft getByExternalId(@PathVariable Long externalId) {
+        return svc.getByExternalId(externalId);
+    }
+
 
 
     /* returns if the sat exists or not */

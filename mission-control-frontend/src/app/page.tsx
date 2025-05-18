@@ -453,10 +453,10 @@ export default function Home() {
             </motion.div>
             <motion.h1 
               variants={item} 
-              className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-300 to-indigo-300"
+              className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight text-white"
             >
               Control the <br />
-              <span className="relative">
+              <span className="relative ">
                 Cosmos
                 <motion.span 
                   className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"

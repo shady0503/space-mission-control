@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface MissionOperatorRepository extends JpaRepository<MissionOperator, Long> {
+public interface MissionOperatorRepository extends JpaRepository<MissionOperator, UUID> {
     List<MissionOperator> findByOperatorId(UUID operatorId);
     long countByMissionId(UUID missionId);
     Optional<MissionOperator> findByMissionIdAndOperatorId(UUID missionId, UUID operatorId);

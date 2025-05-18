@@ -260,4 +260,19 @@ public class OperatorService {
         );
 
     }
+
+    public List<OperatorResponse> findAll() {
+        List<Operator> ops = operatorRepo.findAll();
+        List<OperatorResponse> opResponses = new ArrayList<>();
+        for (Operator op : ops) {
+            opResponses.add(new OperatorResponse(
+                    op.getId(),
+                    op.getUsername(),
+                    op.getEmail(),
+                    op.getCreatedAt(),
+                    op.getEnterpriseId()
+            ));
+        }
+        return opResponses;
+    }
 }

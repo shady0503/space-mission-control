@@ -47,6 +47,11 @@ public class OperatorController {
         );
     }
 
+    @GetMapping
+    public List<OperatorResponse> getAllOperators(Authentication auth) {
+        return operatorService.findAll();
+    }
+
     @GetMapping("/enterprise/{enterpriseId}")
     public List<OperatorResponse> getByEnterprise(@PathVariable UUID enterpriseId) {
         return operatorService.findByEnterpriseId(enterpriseId).stream()
