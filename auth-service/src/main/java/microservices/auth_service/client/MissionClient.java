@@ -25,7 +25,7 @@ public interface MissionClient {
 
     /** Create a new mission. */
     @PostMapping("/api/missions")
-    MissionDto createMission(@RequestBody CreateMissionRequest req);
+    MissionDto createMission(@RequestHeader(value = "Authorization", required = false) String authorization, @RequestBody CreateMissionRequest req,   @RequestParam("operatorId") UUID operatorId);
 
     /** Update an existing mission. */
     @PutMapping("/api/missions/{id}")
@@ -45,21 +45,24 @@ public interface MissionClient {
 
     /** A simple DTO matching the mission-service’s output */
     record MissionDto(
-            UUID id,
+            UUID   id,
+            UUID   enterpriseId,
             String name,
             String description,
-            Boolean status,
+            String status,      // or an Enum if you prefer
             String startDate,
-            String endDate
+            String endDate,
+            String createdAt    // or Instant / LocalDateTime
     ) {}
+
 
     /** Payload for creating a mission */
     record CreateMissionRequest(
             String name,
             String description,
             String startDate,
-            String endDate
-    ) {}
+            String endDate,
+            UUID enterpriseId ) {}
 
     /** Payload for updating a mission */
     record UpdateMissionRequest(

@@ -24,6 +24,7 @@ export const API_CONFIG = {
       GET_ONE: '/api/spacecraft/{id}',
       BY_ENTERPRISE: '/api/spacecraft/enterprise',
       BY_MISSION: '/api/spacecraft/mission/{missionId}',
+      BY_EXTERNAL_ID: '/api/spacecraft/externalId/',
       EXISTS: '/api/spacecraft/',
       SUMMARY: '/api/spacecraft/summary',
       MISSION: '/api/spacecraft/mission',

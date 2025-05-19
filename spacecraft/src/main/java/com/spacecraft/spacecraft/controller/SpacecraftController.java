@@ -157,7 +157,7 @@ public class SpacecraftController {
                 .toList();
     }
 
-    @GetMapping("{externalId}")
+    @GetMapping("/external/{externalId}")
     public Spacecraft getByExternalId(@PathVariable Long externalId) {
         return svc.getByExternalId(externalId);
     }

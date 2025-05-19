@@ -67,6 +67,10 @@ export const spacecraftService = {
     return apiClient.put(`/api/spacecraft/${spacecraft.id}`, spacecraft);
   },
 
+  getSpacecraftByExternalId: async (externalId: number): Promise<Spacecraft> => {
+    return apiClient.get(API_CONFIG.ENDPOINTS.SPACECRAFT.BY_EXTERNAL_ID + externalId);
+  },
+
   detachSpacecraft: async (id: number, missionId: number): Promise<Spacecraft> => {
     console.log("detaching spacecraft", id, missionId);
     alert("detaching spacecraft" + id + missionId)

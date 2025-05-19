@@ -29,9 +29,9 @@ public class MissionClientFallbackFactory implements FallbackFactory<MissionClie
             }
 
             @Override
-            public MissionDto createMission(CreateMissionRequest req) {
-                logger.error("Failed to create mission: {}", req, cause);
-                return null;
+            public MissionDto createMission(String authorization, CreateMissionRequest request, UUID operatorId) {
+                logger.error("MissionClient fallback: failed to create mission for operator {}: {}", operatorId, cause.getMessage());
+                throw new IllegalStateException("Mission service is currently unavailable");
             }
 
             @Override

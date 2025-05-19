@@ -78,7 +78,7 @@ export const missionService = {
    */
   getMissions: async (params?: MissionParams, operatorId?: string): Promise<Mission[]> => {
     const url = operatorId 
-      ? `${API_CONFIG.ENDPOINTS.MISSIONS.BASE}?operatorId=${operatorId}`
+      ? `${API_CONFIG.ENDPOINTS.MISSIONS.BASE}/operator/${operatorId}`
       : API_CONFIG.ENDPOINTS.MISSIONS.BASE;
     
     return apiClient.get(url, { params });
