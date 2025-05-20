@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,7 @@ public interface SpacecraftRepository extends JpaRepository<Spacecraft, UUID> {
     Spacecraft findByExternalId(Long externalId);
     List<Spacecraft> findByMissionId(UUID missionId);
     List<Spacecraft> findByType(SpacecraftType type);
+    Optional<Spacecraft> findByExternalIdAndEnterpriseId(Long externalId, UUID enterpriseId);
 
     List<Spacecraft> findByEnterpriseId(UUID enterpriseId);
 
@@ -42,4 +44,6 @@ public interface SpacecraftRepository extends JpaRepository<Spacecraft, UUID> {
                         tuple -> (Long) tuple[1]
                 ));
     }
+
+    List<Spacecraft> findAllByExternalId(long externalId);
 }

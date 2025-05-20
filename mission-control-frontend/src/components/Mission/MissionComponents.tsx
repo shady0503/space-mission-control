@@ -10,6 +10,7 @@ import {
   ArrowLeft, Edit, Trash2, Calendar, Clock, Users, Rocket,
   AlertTriangle, CheckCircle, RotateCw, Send, Radio, Satellite, Activity
 } from 'lucide-react';
+import { commandService } from '@/lib/services/commandService';
 
 // Updated interfaces to match new API structure
 export interface Mission {
@@ -458,18 +459,42 @@ export function TeamTab({ operators, user, isAdmin, openEditOperatorDialog, hand
 }
 
 interface CommandsTabProps {
-  commands: Command[];
-  isAdmin: boolean;
   spacecrafts: Spacecraft[];
+  isAdmin: boolean;
   openCommandDialog: () => void;
-  handleExecuteCommand: (command: Command) => void;
+  onCommandExecuted: () => void;  // Callback to refresh commands after execution
 }
 
-export function CommandsTab({ commands, isAdmin, spacecrafts, openCommandDialog, handleExecuteCommand }: CommandsTabProps) {
+export function CommandsTab({ spacecrafts, isAdmin, openCommandDialog, onCommandExecuted }: CommandsTabProps) {
+  const [executingCommand, setExecutingCommand] = React.useState<string | null>(null);
+
   // Helper to get spacecraft name
   const getSpacecraftName = (spacecraft?: Spacecraft): string => {
     if (!spacecraft) return 'Unknown';
     return spacecraft.displayName || spacecraft.externalName || 'Unnamed';
+  };
+
+  // Get all commands from all spacecrafts
+  const allCommands = spacecrafts.flatMap(spacecraft => 
+    spacecraft.commands.map(command => ({
+      ...command,
+      spacecraft // Add the spacecraft reference to each command
+    }))
+  );
+
+  const handleExecuteCommand = async (command: Command) => {
+    if (!command.id) return;
+    
+    setExecutingCommand(command.id);
+    try {
+      console.log('Executing command:', { commandId: command.id, command });
+      await commandService.executeCommand(command.id);
+      onCommandExecuted(); // Refresh commands after execution
+    } catch (error) {
+      console.error('Error executing command:', error);
+    } finally {
+      setExecutingCommand(null);
+    }
   };
 
   return (
@@ -486,13 +511,13 @@ export function CommandsTab({ commands, isAdmin, spacecrafts, openCommandDialog,
           </Button>
         )}
       </div>
-      {commands && commands.length > 0 ? (
+      {allCommands && allCommands.length > 0 ? (
         <div className="bg-gray-800 border border-gray-700 rounded-md overflow-hidden">
           <Table>
             <TableHeader className="bg-gray-800">
               <TableRow className="border-gray-700 hover:bg-transparent">
                 <TableHead className="text-blue-300">Type</TableHead>
-                <TableHead className="text-blue-300">Target</TableHead>
+                <TableHead className="text-blue-300">Spacecraft</TableHead>
                 <TableHead className="text-blue-300">Issued By</TableHead>
                 <TableHead className="text-blue-300">Date</TableHead>
                 <TableHead className="text-blue-300">Status</TableHead>
@@ -500,13 +525,18 @@ export function CommandsTab({ commands, isAdmin, spacecrafts, openCommandDialog,
               </TableRow>
             </TableHeader>
             <TableBody>
-              {commands.map((command) => (
+              {allCommands.map((command) => (
                 <TableRow key={command.id} className="border-gray-700 hover:bg-gray-700">
                   <TableCell className="font-medium text-white">
                     {command.commandType}
                   </TableCell>
                   <TableCell className="text-gray-400">
-                    {getSpacecraftName(command.spacecraft)}
+                    <div className="flex items-center gap-2">
+                      {command.spacecraft?.type === 'SATELLITE' ? 
+                        <Satellite className="h-4 w-4 text-blue-400" /> :
+                        <Radio className="h-4 w-4 text-green-400" />}
+                      {getSpacecraftName(command.spacecraft)}
+                    </div>
                   </TableCell>
                   <TableCell className="text-gray-400">
                     {command.operator?.username || 'System'}
@@ -531,8 +561,12 @@ export function CommandsTab({ commands, isAdmin, spacecrafts, openCommandDialog,
                         <Button
                           size="sm"
                           onClick={() => handleExecuteCommand(command)}
+                          disabled={executingCommand === command.id}
                           className="bg-purple-600 hover:bg-purple-700 text-white border border-blue-700"
                         >
+                          {executingCommand === command.id ? (
+                            <RotateCw className="h-4 w-4 animate-spin mr-2" />
+                          ) : null}
                           Execute
                         </Button>
                       ) : (

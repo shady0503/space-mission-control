@@ -4,15 +4,23 @@
  */
 
 import apiClient from "../api/apiClient";
-import { Mission, Spacecraft } from "./missionService";
+import { Spacecraft } from "./missionService";
 import { API_CONFIG } from "../api/config";
 
-export interface Command {
-  id: number;
-  spacecraft: Spacecraft;
-  operator: any;
-  commandType: "LAUNCH" | "ADJUST_TRAJECTORY" | "SHUTDOWN" | "EMERGENCY_STOP";
-  payload: Record<string, any>;
+export type CommandType = "LAUNCH" | "ADJUST_TRAJECTORY" | "SHUTDOWN" | "EMERGENCY_STOP";
+
+export interface CommandRequest {
+  spacecraftId: string;
+  commandType: CommandType;
+  operatorId: string;
+  payload: Record<string, unknown>;  // Flexible payload structure
+}
+
+export interface CommandResponse {
+  id: string;
+  commandType: CommandType;
+  operatorId: string;
+  payload: string;  // JSON string
   status: boolean;
   createdAt: string;
   executedAt: string | null;
@@ -23,7 +31,7 @@ export const commandService = {
    * Get all commands for the current operator
    * @returns List of commands
    */
-  getOperatorCommands: async (): Promise<Command[]> => {
+  getOperatorCommands: async (): Promise<CommandResponse[]> => {
     return apiClient.get(`/api/commands`);
   },
   
@@ -32,26 +40,26 @@ export const commandService = {
    * @param id Command ID
    * @returns Command details
    */
-  getCommand: async (id: number): Promise<Command> => {
+  getCommand: async (id: string): Promise<CommandResponse> => {
     return apiClient.get(`/api/commands/${id}`);
+  },
+
+  /**
+   * Execute a command by ID
+   * @param commandId Command ID to execute
+   * @returns Executed command with updated status and executedAt
+   */
+  executeCommand: async (commandId: string): Promise<CommandResponse> => {
+    return apiClient.put(`/api/commands/execute/${commandId}`);
   },
   
   /**
    * Issue a new command
-   * @param command Command data
+   * @param command Command request data
    * @returns Created command
    */
-  issueCommand: async (command: Partial<Command>): Promise<Command> => {
+  issueCommand: async (command: CommandRequest): Promise<CommandResponse> => {
     return apiClient.post(API_CONFIG.ENDPOINTS.COMMANDS.BASE, command);
-  },
-  
-  /**
-   * Execute a pending command
-   * @param command Command to execute
-   * @returns Executed command
-   */
-  executeCommand: async (command: Command): Promise<Command> => {
-    return apiClient.put(`/api/commands/execute`, command);
   },
   
   /**
@@ -59,8 +67,8 @@ export const commandService = {
    * @param spacecraft Spacecraft
    * @returns List of commands
    */
-  getSpacecraftCommands: async (spacecraftId: string): Promise<Command[]> => {
-    return apiClient.get(`/api/commands/spacecraft/${spacecraftId}`, );
+  getSpacecraftCommands: async (spacecraftId: string): Promise<CommandResponse[]> => {
+    return apiClient.get(`/api/commands/spacecraft/${spacecraftId}`);
   },
   
   /**
@@ -68,9 +76,9 @@ export const commandService = {
    * @param mission Mission
    * @returns List of commands
    */
-  getMissionCommands: async (missionId: string): Promise<Command[]> => {
-    return apiClient.get(`/api/commands/mission/`+missionId, )}
-  
+  getMissionCommands: async (missionId: string): Promise<CommandResponse[]> => {
+    return apiClient.get(`/api/commands/mission/${missionId}`);
+  }
 };
 
 export default commandService;

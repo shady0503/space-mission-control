@@ -1,6 +1,7 @@
 // src/main/java/com/spacecraft/spacecraft/model/Spacecraft.java
 package com.spacecraft.spacecraft.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,7 @@ public class Spacecraft {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @JsonManagedReference
     private List<Command> commands = new ArrayList<>();
 
     public Spacecraft() {}

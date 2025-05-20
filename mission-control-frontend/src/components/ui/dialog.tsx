@@ -46,18 +46,37 @@ function DialogOverlay({
   )
 }
 
+// Extend Radix Content props to accept an optional width override
+interface DialogContentProps extends React.ComponentProps<typeof DialogPrimitive.Content> {
+  /**
+   * Override the default width classes (Tailwind) for the content container.
+   * Example: 'w-[90vw] max-w-[1200px]'
+   */
+  widthClassName?: string
+}
+
 function DialogContent({
   className,
+  widthClassName,
   children,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content>) {
+}: DialogContentProps) {
+  // Default width: full width minus 2rem, up to sm:max-w-lg
+  const widthCN = widthClassName ?? 'w-full max-w-[calc(100%-2rem)] sm:max-w-lg'
+
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+          "data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          "fixed top-[50%] left-[50%] z-50 grid gap-4 rounded-lg border p-6 shadow-lg duration-200",
+          // Width classes (customizable)
+          widthCN,
+          // Center transforms
+          "translate-x-[-50%] translate-y-[-50%]",
           className
         )}
         {...props}
@@ -98,8 +117,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
 function DialogTitle({
   className,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Title>) {
-  return (
+}: React.ComponentProps<typeof DialogPrimitive.Title>) {  return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
       className={cn("text-lg leading-none font-semibold", className)}
@@ -123,13 +141,13 @@ function DialogDescription({
 
 export {
   Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
   DialogTrigger,
+  DialogPortal,
+  DialogOverlay,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
 }

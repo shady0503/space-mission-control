@@ -5,6 +5,7 @@ import { SessionProvider } from 'next-auth/react';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AuthenticatedLayout from '@/components/common/AuthenticatedLayout';
+import { TelemetryProvider } from '@/components/telemetry/TelemetryProvider';
 
 const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' });
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' });
@@ -25,9 +26,11 @@ export default function RootLayout({
             refetchInterval={5 * 60} // Check every 5 minutes instead of every minute
             refetchOnWindowFocus={false}
           >
-            <AuthenticatedLayout>
-              {children}
-            </AuthenticatedLayout>
+            <TelemetryProvider>
+              <AuthenticatedLayout>
+                {children}
+              </AuthenticatedLayout>
+            </TelemetryProvider>
           </SessionProvider>
         </QueryClientProvider>
       </body>

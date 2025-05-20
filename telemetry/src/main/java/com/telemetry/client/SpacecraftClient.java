@@ -2,7 +2,8 @@ package com.telemetry.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-
+import org.springframework.web.bind.annotation.*;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,6 +11,9 @@ import java.util.UUID;
 public interface SpacecraftClient {
     @GetMapping("/api/spacecraft/summary")
     List<SpacecraftSummary> findAllSummary();
+
+    @GetMapping("/api/commands")
+    List<CommandDto> findCommandsForSpacecraft(@RequestParam("externalId") long externalId, @RequestParam("enterpriseId") UUID enterpriseId);
 
     class SpacecraftSummary {
         private UUID id;
@@ -57,4 +61,23 @@ public interface SpacecraftClient {
             this.enterpriseId = enterpriseId;
         }
     }
+
+    record CommandDto(
+            UUID id,
+            UUID spacecraftId,
+            CommandType commandType,
+            UUID operatorId,
+            String payload,
+            Boolean status,
+            Date createdAt,
+            Date executedAt
+    ) {}
+
+    enum CommandType {
+        LAUNCH,
+        ADJUST_TRAJECTORY,
+        SHUTDOWN,
+        EMERGENCY_STOP
+    }
+
 }

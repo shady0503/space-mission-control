@@ -36,11 +36,12 @@ public class SpacecraftService {
     }
 
     /** Look up by the external satellite ID */
-    public Spacecraft getByExternalId(Long externalId) {
-        return Optional.ofNullable(repo.findByExternalId(externalId))
+    public Spacecraft getByExternalId(Long externalId, UUID enterpriseId) {
+        return repo.findByExternalIdAndEnterpriseId(externalId, enterpriseId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "No spacecraft with externalId " + externalId));
+                        "No spacecraft with externalId " + externalId + " and enterpriseId " + enterpriseId));
     }
+
 
     /** All spacecraft assigned to a particular mission (nullable) */
     public List<Spacecraft> getByMissionId(UUID missionId) {
@@ -64,7 +65,7 @@ public class SpacecraftService {
 
     /** Delete a spacecraft by external satellite ID */
     public void deleteByExternalId(Long externalId) {
-        Spacecraft sc = getByExternalId(externalId);
+        Spacecraft sc = repo.findByExternalId(externalId);
         repo.delete(sc);
     }
 

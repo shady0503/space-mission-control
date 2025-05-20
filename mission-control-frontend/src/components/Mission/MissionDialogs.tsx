@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -293,7 +293,7 @@ interface IssueCommandDialogProps {
   newCommand: {
     spacecraftId: string;
     commandType: string;
-    payload: any;
+    payload: Record<string, unknown>;
   };
   setNewCommand: (command: any) => void;
   spacecrafts: Spacecraft[];
@@ -308,15 +308,50 @@ export function IssueCommandDialog({
   spacecrafts,
   handleIssueCommand
 }: IssueCommandDialogProps) {
+  const commandTypes = {
+    ADJUST_TRAJECTORY: {
+      params: [
+        { name: "speed", label: "Speed (km/s)", type: "number" },
+        { name: "acceleration", label: "Acceleration (km/s²)", type: "number" },
+        { name: "orbitRadius", label: "Orbit Radius (km)", type: "number" }
+      ]
+    },
+    SHUTDOWN: {
+      params: []
+    },
+    EMERGENCY_STOP: {
+      params: []
+    }
+  };
+
+  const handleCommandTypeChange = (value: string) => {
+    setNewCommand({
+      ...newCommand,
+      commandType: value,
+      payload: {}
+    });
+  };
+
+  const handleParamChange = (param: string, value: string) => {
+    setNewCommand({
+      ...newCommand,
+      payload: {
+        ...newCommand.payload,
+        [param]: Number(value) // Convert string to number
+      }
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-800 border border-gray-700 text-white">
+      <DialogContent className="bg-gray-900 border border-gray-700 text-white">
         <DialogHeader>
-          <DialogTitle className="text-blue-300">Issue Command</DialogTitle>
+          <DialogTitle>Issue Command</DialogTitle>
         </DialogHeader>
+
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="spacecraftId" className="text-gray-300">Target Spacecraft</Label>
+            <Label className="text-gray-300">Spacecraft</Label>
             <Select
               value={newCommand.spacecraftId}
               onValueChange={(value) => setNewCommand({
@@ -328,10 +363,10 @@ export function IssueCommandDialog({
                 <SelectValue placeholder="Select spacecraft" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border border-gray-700 text-white">
-                {spacecrafts && spacecrafts.map((spacecraft) => (
-                  <SelectItem
-                    key={spacecraft.id}
-                    value={spacecraft.id.toString()}
+                {spacecrafts.map((spacecraft) => (
+                  <SelectItem 
+                    key={spacecraft.id} 
+                    value={spacecraft.id}
                     className="hover:bg-gray-600"
                   >
                     {spacecraft.displayName || spacecraft.externalName}
@@ -340,53 +375,42 @@ export function IssueCommandDialog({
               </SelectContent>
             </Select>
           </div>
+
           <div className="grid gap-2">
-            <Label htmlFor="commandType" className="text-gray-300">Command Type</Label>
+            <Label className="text-gray-300">Command Type</Label>
             <Select
               value={newCommand.commandType}
-              onValueChange={(value) => setNewCommand({
-                ...newCommand,
-                commandType: value
-              })}
+              onValueChange={handleCommandTypeChange}
             >
               <SelectTrigger className="bg-gray-700 border border-gray-600 text-white">
                 <SelectValue placeholder="Select command type" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border border-gray-700 text-white">
-                <SelectItem value="ADJUST_TRAJECTORY" className="hover:bg-gray-600">
-                  Adjust Trajectory
-                </SelectItem>
-                <SelectItem value="SHUTDOWN" className="hover:bg-gray-600">
-                  Shutdown
-                </SelectItem>
-                <SelectItem value="EMERGENCY_STOP" className="hover:bg-gray-600">
-                  Emergency Stop
-                </SelectItem>
+                <SelectItem value="ADJUST_TRAJECTORY" className="hover:bg-gray-600">Adjust Trajectory</SelectItem>
+                <SelectItem value="SHUTDOWN" className="hover:bg-gray-600">Shutdown</SelectItem>
+                <SelectItem value="EMERGENCY_STOP" className="hover:bg-gray-600">Emergency Stop</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="grid gap-2">
-            <Label className="text-gray-300">Command Parameters</Label>
-            <Textarea
-              placeholder="Enter JSON format parameters..."
-              className="bg-gray-700 border border-gray-600 text-white font-mono text-sm h-24"
-              onChange={(e) => {
-                try {
-                  const payload = JSON.parse(e.target.value);
-                  setNewCommand({
-                    ...newCommand,
-                    payload
-                  });
-                } catch (error) {
-                  // Invalid JSON – you may wish to handle this case
-                }
-              }}
-            />
-            <p className="text-sm text-gray-400">
-              Example: {"{"}"deltaX": 10, "deltaY": 0, "deltaZ": 5{"}"}
-            </p>
-          </div>
+
+          {newCommand.commandType === "ADJUST_TRAJECTORY" && (
+            <div className="grid gap-4">
+              {commandTypes.ADJUST_TRAJECTORY.params.map((param) => (
+                <div key={param.name} className="grid gap-2">
+                  <Label className="text-gray-300">{param.label}</Label>
+                  <Input
+                    type={param.type}
+                    value={newCommand.payload[param.name] || ""}
+                    onChange={(e) => handleParamChange(param.name, e.target.value)}
+                    className="bg-gray-700 border border-gray-600 text-white"
+                    placeholder={`Enter ${param.label}`}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+
         <DialogFooter>
           <Button
             variant="outline"
@@ -406,8 +430,6 @@ export function IssueCommandDialog({
       </DialogContent>
     </Dialog>
   );
-
-
 }
 
 interface AddSpacecraftDialogProps {

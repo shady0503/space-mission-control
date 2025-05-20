@@ -1,5 +1,7 @@
 package com.spacecraft.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.spacecraft.spacecraft.model.CommandType;
 import java.util.UUID;
 
@@ -8,17 +10,19 @@ import java.util.UUID;
  * Separates the API contract from the internal model
  */
 public class CommandRequest {
-    private UUID spacecraftId; // Field name changed from spacecraft_id to spacecraftId
+    private UUID spacecraftId;
     private CommandType commandType;
     private UUID operatorId;
-    private String  payload; // Can be either JSON string or an object to be serialized
+
+    @JsonProperty("payload")
+    private JsonNode payload; // Changed from Object to JsonNode for better JSON handling
 
     // Default constructor
     public CommandRequest() {
     }
 
     // Full constructor
-    public CommandRequest(UUID spacecraftId, CommandType commandType, UUID operatorId, String payload) {
+    public CommandRequest(UUID spacecraftId, CommandType commandType, UUID operatorId, JsonNode payload) {
         this.spacecraftId = spacecraftId;
         this.commandType = commandType;
         this.operatorId = operatorId;
@@ -34,7 +38,7 @@ public class CommandRequest {
         this.spacecraftId = spacecraftId;
     }
 
-    // Alternative getter/setter with consistent naming (if you prefer to update calling code)
+    // Alternative getter/setter with consistent naming
     public UUID getSpacecraftId() {
         return spacecraftId;
     }
@@ -59,11 +63,21 @@ public class CommandRequest {
         this.operatorId = operatorId;
     }
 
-    public Object getPayload() {
+    public JsonNode getPayload() {
         return payload;
     }
 
-    public void setPayload(String payload) {
+    public void setPayload(JsonNode payload) {
         this.payload = payload;
+    }
+
+    @Override
+    public String toString() {
+        return "CommandRequest{" +
+                "spacecraftId=" + spacecraftId +
+                ", commandType=" + commandType +
+                ", operatorId=" + operatorId +
+                ", payload=" + payload +
+                '}';
     }
 }

@@ -24,7 +24,7 @@ export const API_CONFIG = {
       GET_ONE: '/api/spacecraft/{id}',
       BY_ENTERPRISE: '/api/spacecraft/enterprise',
       BY_MISSION: '/api/spacecraft/mission/{missionId}',
-      BY_EXTERNAL_ID: '/api/spacecraft/externalId/',
+      BY_EXTERNAL_ID: '/api/spacecraft/external/',
       EXISTS: '/api/spacecraft/',
       SUMMARY: '/api/spacecraft/summary',
       MISSION: '/api/spacecraft/mission',
@@ -32,6 +32,7 @@ export const API_CONFIG = {
     COMMANDS: {
       BASE: '/api/commands',
       GET_ONE: '/api/commands/{id}',
+      EXECUTE: '/api/commands/execute',
       COUNT_PENDING: '/api/commands/count/pending',
       COUNT_SUCCESS: '/api/commands/count/successful',
       COUNT_TYPE: '/api/commands/count/type',

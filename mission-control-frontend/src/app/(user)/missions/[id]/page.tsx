@@ -69,7 +69,8 @@ export default function MissionDetailsPage({
     refreshOperators,
     refreshSpacecrafts,
     refreshCommands,
-    setMission
+    setMission,
+    setCommands
   } = useMissionData(missionId);
 
   const { isAdmin } = useAdminStatus(operators);
@@ -236,18 +237,26 @@ export default function MissionDetailsPage({
 
   // --- command actions ---
   const handleIssueCommand = async () => {
-    if (!mission || !newCommand.spacecraftId || !newCommand.commandType)
+    if (!mission || !newCommand.spacecraftId || !newCommand.commandType || !user.id)
       return;
     try {
+      // Issue the command
       await commandService.issueCommand({
         spacecraftId: newCommand.spacecraftId,
-        missionId: mission.id,
         commandType: newCommand.commandType,
-        payload: JSON.stringify(newCommand.payload)
-      }, user.id);
+        operatorId: user.id,
+        payload: newCommand.payload
+      });
+      
+      // Reset form and close dialog
       setCommandDialogOpen(false);
       setNewCommand({ spacecraftId: '', commandType: '', payload: {} });
-      await refreshCommands();
+      
+      // Refresh data from server
+      await Promise.all([
+        refreshCommands(),
+        refreshSpacecrafts()
+      ]);
     } catch (err) {
       console.error('Error issuing command:', err);
     }
@@ -255,8 +264,16 @@ export default function MissionDetailsPage({
 
   const handleExecuteCommand = async (command: Command) => {
     try {
-      await commandService.executeCommand(command.id, user.id);
-      await refreshCommands();
+      // Execute the command and wait for response
+      const response = await commandService.executeCommand(command.id);
+      
+      // Only refresh if we got a successful response
+      if (response) {
+        await Promise.all([
+          refreshCommands(),
+          refreshSpacecrafts()
+        ]);
+      }
     } catch (err) {
       console.error('Error executing command:', err);
     }
@@ -393,6 +410,7 @@ export default function MissionDetailsPage({
             spacecrafts={spacecrafts}
             openCommandDialog={() => openCommandDialog()}
             handleExecuteCommand={handleExecuteCommand}
+            onCommandExecuted={refreshCommands}
           />
         </Tabs>
 

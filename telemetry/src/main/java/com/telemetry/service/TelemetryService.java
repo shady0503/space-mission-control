@@ -3,6 +3,7 @@ package com.telemetry.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.telemetry.client.SpacecraftClient;
 import com.telemetry.dto.*;
 import com.telemetry.model.SatelliteReference;
 import com.telemetry.model.TrajectoryData;
@@ -26,6 +27,7 @@ public class TelemetryService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final PredictionService predictionService;
+    private final SpacecraftClient spacecraftClient;
 
     private final TrajectoryDataRepository trajectoryDataRepository;
 
@@ -33,8 +35,9 @@ public class TelemetryService {
     private final Map<Long, double[]> previousVelocityECEF = new HashMap<>();
     private final SatelliteReferenceRepository satelliteReferenceRepository;
 
-    public TelemetryService(PredictionService predictionService, TrajectoryDataRepository trajectoryDataRepository, SatelliteReferenceRepository satelliteReferenceRepository) {
+    public TelemetryService(PredictionService predictionService, SpacecraftClient spacecraftClient, TrajectoryDataRepository trajectoryDataRepository, SatelliteReferenceRepository satelliteReferenceRepository) {
         this.predictionService = predictionService;
+        this.spacecraftClient = spacecraftClient;
         this.trajectoryDataRepository = trajectoryDataRepository;
         this.satelliteReferenceRepository = satelliteReferenceRepository;
     }

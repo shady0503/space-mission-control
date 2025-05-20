@@ -26,6 +26,7 @@ interface SceneContentProps {
   setFocusedSatellite: (sat: FocusedSatellite | null) => void;
   isFocused: boolean;
   setIsFocused: (val: boolean) => void;
+  onSatelliteSelect: (satId: string) => void;
 }
 
 const easeInOutQuad = (t: number): number =>
@@ -37,6 +38,7 @@ const SceneContent: React.FC<SceneContentProps> = ({
   setFocusedSatellite,
   isFocused,
   setIsFocused,
+  onSatelliteSelect,
 }) => {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
@@ -100,6 +102,7 @@ const SceneContent: React.FC<SceneContentProps> = ({
     setIsFocused(true);
     registerSatellite(config.name, data.object);
     animateCameraToSatellite(data.object);
+    onSatelliteSelect(config.satId);
   };
 
   const resetView = () => {

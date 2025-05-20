@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import SceneContent from './SceneContent';
+import SatelliteDetails from './SatelliteDetails';
 import * as THREE from 'three';
 import useTelemetry from '@/lib/hooks/useTelemetry';
 
@@ -19,6 +20,7 @@ const Scene: React.FC = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [selectedSatelliteId, setSelectedSatelliteId] = useState<number | null>(null);
   
   // Use telemetry hook
   const { 
@@ -45,6 +47,16 @@ const Scene: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Handle satellite selection
+  const handleSatelliteSelect = (satId: string) => {
+    setSelectedSatelliteId(parseInt(satId, 10));
+  };
+
+  // Handle satellite details close
+  const handleSatelliteDetailsClose = () => {
+    setSelectedSatelliteId(null);
+  };
 
   // Utility functions to generate satellite configuration
   const getSatelliteName = (satId: string): string => `Satellite ${satId}`;
@@ -99,9 +111,17 @@ const Scene: React.FC = () => {
           focusedSatellite={focusedSatellite} 
           setFocusedSatellite={setFocusedSatellite} 
           isFocused={isFocused} 
-          setIsFocused={setIsFocused} 
+          setIsFocused={setIsFocused}
+          onSatelliteSelect={handleSatelliteSelect}
         />
       </Canvas>
+      
+      {selectedSatelliteId && (
+        <SatelliteDetails
+          externalId={selectedSatelliteId}
+          onClose={handleSatelliteDetailsClose}
+        />
+      )}
       
       {visibleSatellites.length === 0 && !isLoading && (
         <div className="absolute inset-0 flex items-center justify-center text-white bg-black bg-opacity-50">

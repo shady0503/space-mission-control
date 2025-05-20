@@ -158,9 +158,10 @@ public class SpacecraftController {
     }
 
     @GetMapping("/external/{externalId}")
-    public Spacecraft getByExternalId(@PathVariable Long externalId) {
-        return svc.getByExternalId(externalId);
+    public Spacecraft getByExternalId(@PathVariable Long externalId, @RequestParam("enterpriseId") UUID enterpriseId) {
+        return svc.getByExternalId(externalId, enterpriseId);
     }
+
 
 
 

@@ -336,11 +336,15 @@ class WebSocketClient {
       clearTimeout(this.reconnectTimers.get(endpoint)!);
     }
     
-    // Use progressive backoff based on connection attempts
+    // Only attempt one reconnection
     const attempts = this.connectionAttempts.get(endpoint) || 0;
-    const delay = Math.min(RECONNECT_DELAY * Math.pow(1.5, Math.min(attempts, 5)), 30000); // Cap at 30 seconds
+    if (attempts >= 1) {
+      console.log(`[WebSocket] Maximum reconnection attempts reached for ${endpoint}`);
+      this.notifyStatusHandlers(endpoint, 'disconnected');
+      return;
+    }
     
-    console.log(`[WebSocket] Scheduling reconnect to ${endpoint} in ${delay}ms (attempt #${attempts + 1})`);
+    console.log(`[WebSocket] Scheduling reconnect to ${endpoint} (attempt #${attempts + 1})`);
     
     this.reconnectTimers.set(
       endpoint,
@@ -351,7 +355,7 @@ class WebSocketClient {
         } else {
           this.connect(endpoint, null);
         }
-      }, delay)
+      }, RECONNECT_DELAY)
     );
   }
 

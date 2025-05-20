@@ -1,6 +1,7 @@
 package com.spacecraft.spacecraft.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spacecraft.dto.CommandRequest;
 import com.spacecraft.exception.CommandCreationException;
@@ -34,24 +35,69 @@ public class CommandService {
 
     @Transactional
     public Command create(CommandRequest commandRequest) throws JsonProcessingException {
-        // Ensure timestamps
-        Command command1 = new Command();
-        UUID spacecraftId = commandRequest.getSpacecraft();
-        Spacecraft spacecraft = spacecraftRepo.findById(spacecraftId)
-                .orElseThrow(() -> new EntityNotFoundException("Spacecraft not found: " + spacecraftId));
+        try {
+            // Validate required fields
+            validateCommandRequest(commandRequest);
 
-        command1.setSpacecraft(spacecraft);
-        command1.setCommandType(commandRequest.getCommandType());
-        command1.setOperatorId(commandRequest.getOperatorId());
-        command1.setCreatedAt(new Date());
-        command1.setStatus(false);
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonPayload = objectMapper.writeValueAsString(commandRequest.getPayload());
-        command1.setPayload(jsonPayload);
-        return repo.save(command1);
+            // Find spacecraft by ID
+            UUID spacecraftId = commandRequest.getSpacecraft();
+            Spacecraft spacecraft = spacecraftRepo.findById(spacecraftId)
+                    .orElseThrow(() -> new EntityNotFoundException("Spacecraft not found: " + spacecraftId));
+
+            // Create new command
+            Command command = new Command();
+            command.setSpacecraft(spacecraft);
+            command.setCommandType(commandRequest.getCommandType());
+            command.setOperatorId(commandRequest.getOperatorId());
+            command.setCreatedAt(new Date());
+            command.setStatus(false); // Initial status is false until executed
+
+            // Convert JsonNode to JSON string
+            String jsonPayload;
+            JsonNode payloadNode = commandRequest.getPayload();
+            if (payloadNode == null) {
+                jsonPayload = "null";
+            } else if (payloadNode.isTextual()) {
+                // If it's already a text node, use its text value as JSON string
+                jsonPayload = payloadNode.asText();
+            } else {
+                // Convert JsonNode to JSON string
+                jsonPayload = objectMapper.writeValueAsString(payloadNode);
+            }
+
+            command.setPayload(jsonPayload);
+
+            logger.info("Creating command for spacecraft {} with type {} and operator {}",
+                    spacecraftId, commandRequest.getCommandType(), commandRequest.getOperatorId());
+
+            return repo.save(command);
+
+        } catch (EntityNotFoundException e) {
+            logger.error("Spacecraft not found: {}", e.getMessage());
+            throw e;
+        } catch (JsonProcessingException e) {
+            logger.error("Error processing JSON payload: {}", e.getMessage(), e);
+            throw new JsonProcessingException("Failed to serialize payload: " + e.getMessage()) {};
+        } catch (Exception e) {
+            logger.error("Unexpected error creating command: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create command: " + e.getMessage(), e);
+        }
     }
 
-    /** Create a new Command */
+    private void validateCommandRequest(CommandRequest request) {
+        if (request.getSpacecraft() == null) {
+            throw new IllegalArgumentException("Spacecraft ID cannot be null");
+        }
+        if (request.getCommandType() == null) {
+            throw new IllegalArgumentException("Command type cannot be null");
+        }
+        if (request.getOperatorId() == null) {
+            throw new IllegalArgumentException("Operator ID cannot be null");
+        }
+        // Payload can be null, so we don't validate it here
+    }
+
+    /** Create a new Command with enhanced validation and error handling */
     @Transactional
     public Command issueCommand(CommandRequest request) throws CommandCreationException {
         try {
@@ -80,14 +126,17 @@ public class CommandService {
             }
             Spacecraft spacecraft = spacecraftOpt.get();
 
-            // Convert payload to JSON string if it's not already a string
+            // Convert JsonNode payload to JSON string
             String payloadJson;
-            if (request.getPayload() instanceof String) {
-                payloadJson = (String) request.getPayload();
+            JsonNode payloadNode = request.getPayload();
+
+            if (payloadNode.isTextual()) {
+                // If it's already a text node, use its text value
+                payloadJson = payloadNode.asText();
             } else {
-                // Serialize the payload object to JSON
+                // Serialize the JsonNode to JSON string
                 try {
-                    payloadJson = objectMapper.writeValueAsString(request.getPayload());
+                    payloadJson = objectMapper.writeValueAsString(payloadNode);
                 } catch (Exception e) {
                     throw new CommandCreationException("Failed to serialize payload to JSON: " + e.getMessage());
                 }
@@ -176,4 +225,22 @@ public class CommandService {
                 .flatMap(s -> s.getCommands().stream())
                 .collect(Collectors.toList());
     }
+
+    public Command execute(UUID commandId) {
+        Command command = repo.findById(commandId).orElseThrow(() -> new EntityNotFoundException("Command not found: " + commandId));
+        command.setStatus(true);
+        command.setExecutedAt(new Date());
+        return repo.save(command);
+
+    }
+
+    public List<Command> findCommandsForSpacecraft(long externalId, UUID enterpriseId) {
+        List<Spacecraft> matchingSpacecrafts = spacecraftRepo.findAllByExternalId(externalId);
+
+        return matchingSpacecrafts.stream()
+                .filter(s -> enterpriseId.equals(s.getEnterpriseId()))
+                .flatMap(s -> repo.findBySpacecraftId(s.getId()).stream())
+                .toList();
+    }
+
 }
