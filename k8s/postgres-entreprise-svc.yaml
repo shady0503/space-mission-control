@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-entreprise
+  labels:
+    io.kompose.service: postgres-entreprise
+spec:
+  type: ClusterIP
+  selector:
+    io.kompose.service: postgres-entreprise
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432

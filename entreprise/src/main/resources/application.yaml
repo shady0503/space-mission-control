@@ -37,3 +37,12 @@ feign:
 # Remote service locations for Feign and internal communication
 # --------------------------------------------------------------------------- #
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true

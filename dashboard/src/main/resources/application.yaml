@@ -1,4 +1,4 @@
-pring:
+spring:
   application:
     name: dashboard-service
 
@@ -18,3 +18,13 @@ feign:
     config:
       default:
         loggerLevel: basic
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true

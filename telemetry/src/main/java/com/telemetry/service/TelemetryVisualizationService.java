@@ -3,7 +3,9 @@ package com.telemetry.service;
 
 import com.telemetry.dto.PredictiveOrbitPoint;
 import com.telemetry.dto.TelemetryPosition;
+import com.telemetry.model.SatelliteReference;
 import com.telemetry.model.TrajectoryData;
+import com.telemetry.repository.SatelliteReferenceRepository;
 import com.telemetry.repository.TrajectoryDataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,13 +25,16 @@ public class TelemetryVisualizationService {
 
     private final TrajectoryDataRepository trajectoryRepo;
     private final PredictionService        predictionService;
+    private final SatelliteReferenceRepository satRefRepo;
 
     public TelemetryVisualizationService(
             TrajectoryDataRepository trajectoryRepo,
-            PredictionService predictionService
+            PredictionService predictionService,
+            SatelliteReferenceRepository satRefRepo
     ) {
         this.trajectoryRepo     = trajectoryRepo;
         this.predictionService  = predictionService;
+        this.satRefRepo         = satRefRepo;
     }
 
     /**
@@ -203,9 +208,13 @@ public class TelemetryVisualizationService {
                 ))
                 .collect(Collectors.toList());
 
+        // Get satellite reference to retrieve enterpriseId for command integration
+        Optional<SatelliteReference> satRef = satRefRepo.findByExternalId(externalId);
+        UUID enterpriseId = satRef.map(SatelliteReference::getEnterpriseId).orElse(null);
+
         int nPred = (predictionPoints != null ? predictionPoints : 120);
-        List<PredictiveOrbitPoint> shortPred = predictionService.predictOrbit(posList, 60, 60);
-        List<PredictiveOrbitPoint> fullPred  = predictionService.predictFullOrbit(posList, nPred);
+        List<PredictiveOrbitPoint> shortPred = predictionService.predictOrbit(posList, 60, 60, externalId, enterpriseId);
+        List<PredictiveOrbitPoint> fullPred  = predictionService.predictFullOrbit(posList, nPred, externalId, enterpriseId);
 
         List<Map<String, Object>> shortData = shortPred.stream()
                 .map(this::formatPred)

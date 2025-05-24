@@ -87,13 +87,15 @@ public class TelemetryKafkaProducer {
                             spacecraftData.put("telemetry", formatTrajectoryData(trajectoryData));
 
                             // Generate and add short-term predictions (60 steps, 60 seconds each)
+                            // Pass the enterpriseId to enable command integration
                             List<PredictiveOrbitPoint> shortPredictions =
-                                    predictionService.predictOrbit(positions, 60, 60);
+                                    predictionService.predictOrbit(positions, 60, 60, spacecraftId, operatorId);
                             spacecraftData.put("shortPredictions", formatPredictions(shortPredictions));
 
                             // Generate and add full orbit predictions (120 points)
+                            // Pass the enterpriseId to enable command integration
                             List<PredictiveOrbitPoint> fullOrbitPredictions =
-                                    predictionService.predictFullOrbit(positions, 120);
+                                    predictionService.predictFullOrbit(positions, 120, spacecraftId, operatorId);
                             spacecraftData.put("fullOrbitPredictions", formatPredictions(fullOrbitPredictions));
 
                             // Add spacecraft data to telemetry map (synchronized to avoid concurrent modification)

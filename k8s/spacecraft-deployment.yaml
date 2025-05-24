@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe convert --out k8s/
+    kompose.version: 1.36.0 (ae2a39403)
+  labels:
+    io.kompose.service: spacecraft
+  name: spacecraft
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: spacecraft
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe convert --out k8s/
+        kompose.version: 1.36.0 (ae2a39403)
+      labels:
+        io.kompose.service: spacecraft
+    spec:
+      containers:
+        - env:
+            - name: JAVA_TOOL_OPTIONS
+              value: -javaagent:/otel/opentelemetry-javaagent.jar
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://lgtm:4318
+            - name: OTEL_LOGS_EXPORTER
+              value: otlp
+            - name: OTEL_METRICS_EXPORTER
+              value: otlp
+            - name: OTEL_TRACES_EXPORTER
+              value: otlp
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: spacecraft_pass
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-spacecraft:5432/spacecraft_db
+            - name: SPRING_DATASOURCE_USERNAME
+              value: spacecraft_user
+          image: backup_devops_project-spacecraft:latest
+          imagePullPolicy: Never
+          name: spacecraft
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always

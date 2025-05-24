@@ -25,3 +25,13 @@ telemetry:
 # --------------------------------------------------------------------------- #
 # Full service mesh: every service can call others if needed
 # --------------------------------------------------------------------------- #
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+          
+  prometheus:
+    metrics:
+      export:
+        enabled: true

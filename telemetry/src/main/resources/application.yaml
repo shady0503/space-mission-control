@@ -43,3 +43,15 @@ n2yo:
   api:
     base-url: https://api.n2yo.com/rest/v1
     key: "2Q9ZTN-2WB26E-FBNTLF-5FTW"
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true

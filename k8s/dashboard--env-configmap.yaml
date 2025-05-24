@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  MISSION_SERVICE_URL: http://mission-service:8080
+  OPERATOR_SERVICE_URL: http://auth-service:8080
+  SPACECRAFT_SERVICE_URL: http://spacecraft:8080
+  TELEMETRY_SERVICE_URL: http://telemetry:8080
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: dashboard-dashboard--env
+  name: dashboard--env

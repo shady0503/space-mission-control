@@ -1,15 +1,22 @@
-# syntax=docker/dockerfile:1.4
+# syntax=docker/dockerfile:1.7
+###############################################################################
+# 0. Global build args
+###############################################################################
+ARG JDK_VERSION=17
+ARG OTEL_VERSION=2.4.0
+ARG MVN_FLAGS="-q -B -Dmaven.test.skip"
+# master list of all services — edit in ONE place
+ARG MODULES="auth-service entreprise gateway mission-service spacecraft telemetry dashboard"
 
-########################################
-# 1) Build Stage - Dependency Caching
-########################################
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
+###############################################################################
+# 1. Dependency pre-fetch  (writes to /root/.m2 cache)
+###############################################################################
+FROM maven:3.9.6-eclipse-temurin-${JDK_VERSION} AS maven-deps
+ARG MODULES
+ARG MVN_FLAGS
 WORKDIR /workspace
 
-# Shared Maven cache
-RUN --mount=type=cache,target=/root/.m2 mkdir -p /root/.m2
-
-# Copy all pom.xml files for each service
+# copy ONLY pom.xml files (cache-friendly)
 COPY auth-service/pom.xml      auth-service/
 COPY entreprise/pom.xml        entreprise/
 COPY gateway/pom.xml           gateway/
@@ -18,104 +25,88 @@ COPY spacecraft/pom.xml        spacecraft/
 COPY telemetry/pom.xml         telemetry/
 COPY dashboard/pom.xml         dashboard/
 
-# Pre-fetch dependencies for all services
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn -f auth-service/pom.xml dependency:go-offline -B && \
-    mvn -f entreprise/pom.xml dependency:go-offline -B && \
-    mvn -f gateway/pom.xml dependency:go-offline -B && \
-    mvn -f mission-service/pom.xml dependency:go-offline -B && \
-    mvn -f spacecraft/pom.xml dependency:go-offline -B && \
-    mvn -f telemetry/pom.xml dependency:go-offline -B && \
-    mvn -f dashboard/pom.xml dependency:go-offline -B
+# download deps for every module
+RUN --mount=type=cache,id=maven-repo,target=/root/.m2 \
+    for m in ${MODULES}; do \
+      echo "🔹 go-offline for $m" && \
+      mvn -f ${m}/pom.xml ${MVN_FLAGS} dependency:go-offline; \
+    done
 
-########################################
-# 2) Build stages for each service
-########################################
+###############################################################################
+# 2. Build stage  (re-uses the same cache)
+###############################################################################
+FROM maven:3.9.6-eclipse-temurin-${JDK_VERSION} AS build
+ARG MODULES
+ARG MVN_FLAGS
+WORKDIR /workspace
 
-# Auth Service Build
-FROM builder AS auth-build
-WORKDIR /workspace/auth-service
-COPY auth-service/src ./src
-RUN mvn clean package -Dmaven.test.skip -B
+# full source trees (pom.xml + src) for each module
+COPY auth-service      auth-service
+COPY entreprise        entreprise
+COPY gateway           gateway
+COPY mission-service   mission-service
+COPY spacecraft        spacecraft
+COPY telemetry         telemetry
+COPY dashboard         dashboard
 
-# Entreprise Service Build
-FROM builder AS entreprise-build
-WORKDIR /workspace/entreprise
-COPY entreprise/src ./src
-RUN mvn clean package -Dmaven.test.skip -B
+# compile JARs (unchanged modules are skipped)
+RUN --mount=type=cache,id=maven-repo,target=/root/.m2 \
+    for m in ${MODULES}; do \
+      echo "🚀 packaging $m" && \
+      mvn -f ${m}/pom.xml ${MVN_FLAGS} package; \
+    done
 
-# Gateway Service Build
-FROM builder AS gateway-build
-WORKDIR /workspace/gateway
-COPY gateway/src ./src
-RUN mvn clean package -Dmaven.test.skip -B
+###############################################################################
+# 3. Base runtime (JRE + CA + OTEL agent)
+###############################################################################
+FROM eclipse-temurin:${JDK_VERSION}-jre-alpine AS base-runtime
+RUN apk add --no-cache curl ca-certificates && mkdir -p /otel
+ARG OTEL_VERSION
+RUN curl -sSL \
+  https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OTEL_VERSION}/opentelemetry-javaagent.jar \
+  -o /otel/opentelemetry-javaagent.jar
 
-# Mission Service Build
-FROM builder AS mission-build
-WORKDIR /workspace/mission-service
-COPY mission-service/src ./src
-RUN mvn clean package -Dmaven.test.skip -B
+ENV JAVA_TOOL_OPTIONS="-javaagent:/otel/opentelemetry-javaagent.jar" \
+    OTEL_TRACES_EXPORTER=otlp \
+    OTEL_LOGS_EXPORTER=otlp \
+    OTEL_METRICS_EXPORTER=none \
+    OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318
 
-# Spacecraft Service Build
-FROM builder AS spacecraft-build
-WORKDIR /workspace/spacecraft
-COPY spacecraft/src ./src
-RUN mvn clean package -Dmaven.test.skip -B
-
-# Telemetry Service Build
-FROM builder AS telemetry-build
-WORKDIR /workspace/telemetry
-COPY telemetry/src ./src
-RUN mvn clean package -Dmaven.test.skip -B
-
-# Dashboard Service Build
-FROM builder AS dashboard-build
-WORKDIR /workspace/dashboard
-COPY dashboard/src ./src
-RUN mvn clean package -Dmaven.test.skip -B
-
-########################################
-# 3) Runtime stages for each service
-########################################
-
-# Auth Service Runtime
-FROM eclipse-temurin:17-jre-alpine AS auth-runtime
 WORKDIR /app
-COPY --from=auth-build /workspace/auth-service/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=2s --start-period=20s \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-# Entreprise Service Runtime
-FROM eclipse-temurin:17-jre-alpine AS entreprise-runtime
-WORKDIR /app
-COPY --from=entreprise-build /workspace/entreprise/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# run **whatever jar** is found in /app
+ENTRYPOINT ["sh","-c","exec java -jar $(ls /app/*.jar | head -n 1)"]
 
-# Gateway Service Runtime
-FROM eclipse-temurin:17-jre-alpine AS gateway-runtime
-WORKDIR /app
-COPY --from=gateway-build /workspace/gateway/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+###############################################################################
+# 4. Final images — copy jar(s) into /app
+###############################################################################
+FROM base-runtime AS auth-runtime
+ENV OTEL_SERVICE_NAME=auth-service
+COPY --from=build /workspace/auth-service/target/*.jar /app/
 
-# Mission Service Runtime
-FROM eclipse-temurin:17-jre-alpine AS mission-runtime
-WORKDIR /app
-COPY --from=mission-build /workspace/mission-service/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+FROM base-runtime AS entreprise-runtime
+ENV OTEL_SERVICE_NAME=entreprise-service
+COPY --from=build /workspace/entreprise/target/*.jar /app/
 
-# Spacecraft Service Runtime
-FROM eclipse-temurin:17-jre-alpine AS spacecraft-runtime
-WORKDIR /app
-COPY --from=spacecraft-build /workspace/spacecraft/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+FROM base-runtime AS gateway-runtime
+ENV OTEL_SERVICE_NAME=gateway-service
+COPY --from=build /workspace/gateway/target/*.jar /app/
 
-# Telemetry Service Runtime
-FROM eclipse-temurin:17-jre-alpine AS telemetry-runtime
-WORKDIR /app
-COPY --from=telemetry-build /workspace/telemetry/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+FROM base-runtime AS mission-runtime
+ENV OTEL_SERVICE_NAME=mission-service
+COPY --from=build /workspace/mission-service/target/*.jar /app/
 
-# Dashboard Service Runtime
-FROM eclipse-temurin:17-jre-alpine AS dashboard-runtime
-WORKDIR /app
-COPY --from=dashboard-build /workspace/dashboard/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+FROM base-runtime AS spacecraft-runtime
+ENV OTEL_SERVICE_NAME=spacecraft-service
+COPY --from=build /workspace/spacecraft/target/*.jar /app/
+
+FROM base-runtime AS telemetry-runtime
+ENV OTEL_SERVICE_NAME=telemetry-service
+COPY --from=build /workspace/telemetry/target/*.jar /app/
+
+FROM base-runtime AS dashboard-runtime
+ENV OTEL_SERVICE_NAME=dashboard-service
+COPY --from=build /workspace/dashboard/target/*.jar /app/

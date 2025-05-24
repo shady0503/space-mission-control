@@ -27,3 +27,12 @@ spring:
 # --------------------------------------------------------------------------- #
 
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
