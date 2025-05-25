@@ -17,9 +17,7 @@ import {
   Monitor, 
   Globe, 
   Shield, 
-  Zap, 
   Award, 
-  Calendar, 
   Settings, 
   ExternalLink,
   Star,
@@ -49,18 +47,7 @@ const staggerItems = {
   show: { transition: { staggerChildren: 0.1 } }
 };
 
-const floatAnimation = {
-  initial: { y: 0 },
-  animate: { 
-    y: [0, -10, 0],
-    transition: { 
-      duration: 4,
-      repeat: Infinity,
-      repeatType: "loop",
-      ease: "easeInOut" 
-    }
-  }
-};
+
 
 export default function Home() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
@@ -133,31 +120,31 @@ export default function Home() {
   // Updated team data with real software engineering students
   const team = [
     { 
-      name: "Chadi", 
-      role: "Full-Stack Developer", 
-      bio: "Software Engineering student specializing in backend systems and API development. Passionate about scalable architecture and space technology.",
-      achievement: "Led the development of the mission control backend infrastructure, implementing real-time telemetry processing.",
+      name: "Taqi Med Chadi", 
+      role: "Software Engineering Student", 
+      bio: "Software Engineering student passionate about backend development and system architecture. Currently learning modern web technologies and database design.",
+      achievement: "Contributed to the mission control backend development and API integration for the team project.",
       image: "/team/chadi.jpeg"
     },
     { 
-      name: "Chaymae", 
-      role: "Frontend Developer & UI/UX Designer", 
-      bio: "Software Engineering student with expertise in React and modern web technologies. Focuses on creating intuitive user experiences for complex systems.",
-      achievement: "Designed and implemented the responsive dashboard interface, improving user workflow efficiency by 40%.",
+      name: "Chaymae Bouazza", 
+      role: "Software Engineering Student", 
+      bio: "Software Engineering student with a focus on frontend development and user interface design. Enjoys creating responsive and user-friendly web applications.",
+      achievement: "Designed and developed the user interface components and improved the overall user experience of the application.",
       image: "/team/chaymae.jpeg"
     },
     { 
-      name: "Imane", 
-      role: "Data Engineer & Analytics Specialist", 
-      bio: "Software Engineering student specializing in data processing and visualization. Expert in handling large-scale telemetry data and real-time analytics.",
-      achievement: "Developed the telemetry data pipeline that processes over 10,000 data points per second with 99.9% accuracy.",
+      name: "Imane Benabbou", 
+      role: "Software Engineering Student", 
+      bio: "Software Engineering student interested in data processing and software testing. Learning about data structures, algorithms, and quality assurance practices.",
+      achievement: "Implemented data validation features and contributed to the testing framework for the mission control system.",
       image: "/team/imane.jpeg"
     },
     { 
-      name: "Saad", 
-      role: "DevOps Engineer & System Architect", 
-      bio: "Software Engineering student focused on cloud infrastructure and deployment automation. Ensures system reliability and scalability.",
-      achievement: "Architected the containerized deployment system, reducing deployment time from hours to minutes.",
+      name: "Saad Alaoui Sossé", 
+      role: "Software Engineering Student", 
+      bio: "Software Engineering student exploring cloud technologies and deployment strategies. Interested in DevOps practices and system administration.",
+      achievement: "Set up the development environment and deployment pipeline, ensuring smooth collaboration and code integration.",
       image: "/team/saad.jpeg"
     },
   ];
@@ -347,78 +334,126 @@ export default function Home() {
   ];
 
   return (
-    <main className="bg-black text-white min-h-screen relative">
-      {/* Background stars effect */}
+    <main className="bg-gradient-to-br from-slate-950 via-black to-indigo-950 text-white min-h-screen relative overflow-hidden">
+      {/* Enhanced background with multiple layers */}
       <div className="absolute inset-0 overflow-hidden z-0">
-        <div className="stars-sm"></div>
-        <div className="stars-md"></div>
-        <div className="stars-lg"></div>
+        {/* Animated gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-purple-950/20 animate-pulse-slow"></div>
+        
+        {/* Enhanced stars effect */}
+        <div className="stars-sm animate-twinkle"></div>
+        <div className="stars-md animate-twinkle-slow"></div>
+        <div className="stars-lg animate-twinkle-slower"></div>
+        
+        {/* Nebula-like background effects */}
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute top-[10%] left-[10%] w-96 h-96 rounded-full bg-gradient-to-br from-blue-600/10 via-purple-600/5 to-transparent blur-3xl animate-float-slow"></div>
+          <div className="absolute bottom-[20%] right-[15%] w-80 h-80 rounded-full bg-gradient-to-br from-indigo-600/10 via-cyan-600/5 to-transparent blur-3xl animate-float-reverse"></div>
+          <div className="absolute top-[60%] left-[70%] w-64 h-64 rounded-full bg-gradient-to-br from-purple-600/8 via-pink-600/4 to-transparent blur-3xl animate-float"></div>
+        </div>
       </div>
       
-      {/* Floating planet decorations */}
+      {/* Enhanced floating planet decorations */}
       <motion.div 
-        className="absolute top-[15%] right-[5%] w-32 h-32 rounded-full bg-gradient-to-br from-purple-800 to-indigo-900 opacity-40 blur-md z-0"
+        className="absolute top-[15%] right-[5%] w-32 h-32 rounded-full bg-gradient-to-br from-purple-600/60 via-indigo-700/40 to-blue-800/60 opacity-70 blur-sm z-0 shadow-2xl shadow-purple-500/20"
         animate={{
-          y: [0, -15, 0],
-          rotate: [0, 10, 0],
-          scale: [1, 1.05, 1],
+          y: [0, -20, 0],
+          rotate: [0, 15, 0],
+          scale: [1, 1.1, 1],
         }}
         transition={{
-          duration: 20,
+          duration: 25,
           repeat: Infinity,
           repeatType: "loop",
+          ease: "easeInOut"
         }}
       />
       
       <motion.div 
-        className="absolute bottom-[30%] left-[8%] w-24 h-24 rounded-full bg-gradient-to-br from-blue-800 to-cyan-900 opacity-30 blur-md z-0"
+        className="absolute bottom-[30%] left-[8%] w-24 h-24 rounded-full bg-gradient-to-br from-cyan-600/60 via-blue-700/40 to-indigo-800/60 opacity-60 blur-sm z-0 shadow-2xl shadow-cyan-500/20"
         animate={{
-          y: [0, 12, 0],
-          rotate: [0, -5, 0],
-          scale: [1, 1.03, 1],
+          y: [0, 15, 0],
+          rotate: [0, -10, 0],
+          scale: [1, 1.05, 1],
         }}
         transition={{
-          duration: 15,
+          duration: 18,
           repeat: Infinity,
           repeatType: "loop",
+          ease: "easeInOut"
+        }}
+      />
+      
+      {/* Additional atmospheric elements */}
+      <motion.div 
+        className="absolute top-[40%] right-[20%] w-16 h-16 rounded-full bg-gradient-to-br from-emerald-600/40 via-teal-700/30 to-cyan-800/40 opacity-50 blur-md z-0"
+        animate={{
+          y: [0, -8, 0],
+          x: [0, 5, 0],
+          scale: [1, 1.2, 1],
+        }}
+        transition={{
+          duration: 12,
+          repeat: Infinity,
+          repeatType: "loop",
+          ease: "easeInOut"
+        }}
+      />
+      
+      <motion.div 
+        className="absolute top-[70%] left-[25%] w-20 h-20 rounded-full bg-gradient-to-br from-violet-600/40 via-purple-700/30 to-indigo-800/40 opacity-40 blur-lg z-0"
+        animate={{
+          y: [0, 10, 0],
+          x: [0, -8, 0],
+          rotate: [0, 20, 0],
+        }}
+        transition={{
+          duration: 22,
+          repeat: Infinity,
+          repeatType: "loop",
+          ease: "easeInOut"
         }}
       />
 
       {/* Content container */}
       <div className="relative z-10">
-        {/* Navigation */}
+        {/* Enhanced Navigation */}
         <motion.nav
           variants={container}
           initial="hidden"
           animate="show"
-          className="container mx-auto px-6 py-6 flex justify-between items-center"
+          className="container mx-auto px-6 py-6 flex justify-between items-center relative z-20"
         >
           <Link href="/" className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400">
             <div className="flex items-center gap-2">
               <motion.div
-                className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center"
-                whileHover={{ rotate: 360 }}
+                className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30"
+                whileHover={{ 
+                  rotate: 360,
+                  scale: 1.1,
+                  boxShadow: "0 0 25px rgba(59, 130, 246, 0.5)"
+                }}
                 transition={{ duration: 0.8 }}
               >
                 <Rocket className="w-4 h-4 text-white transform -rotate-45" />
               </motion.div>
-              <span>SMC</span>
+              <span className="font-extrabold tracking-wide">SMC</span>
             </div>
           </Link>
           
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="#features" className="hover:text-blue-400 transition-colors">Features</Link>
-            <Link href="#case-studies" className="hover:text-blue-400 transition-colors">Case Studies</Link>
-            <Link href="#testimonials" className="hover:text-blue-400 transition-colors">Testimonials</Link>
-            <Link href="#pricing" className="hover:text-blue-400 transition-colors">Pricing</Link>
-            <Link href="#team" className="hover:text-blue-400 transition-colors">Team</Link>
+          <div className="hidden md:flex items-center space-x-8 bg-gray-900/30 backdrop-blur-md rounded-full px-6 py-3 border border-gray-700/50">
+            <Link href="#features" className="hover:text-blue-400 transition-all duration-300 hover:scale-105 font-medium">Features</Link>
+            <Link href="#case-studies" className="hover:text-blue-400 transition-all duration-300 hover:scale-105 font-medium">Case Studies</Link>
+            <Link href="#testimonials" className="hover:text-blue-400 transition-all duration-300 hover:scale-105 font-medium">Testimonials</Link>
+            <Link href="#pricing" className="hover:text-blue-400 transition-all duration-300 hover:scale-105 font-medium">Pricing</Link>
+            <Link href="#team" className="hover:text-blue-400 transition-all duration-300 hover:scale-105 font-medium">Team</Link>
           </div>
           
           <div className="flex space-x-4 items-center">
-            <Link href="/login" className="hover:text-blue-400 transition-colors font-medium">
+            <Link href="/login" className="hover:text-blue-400 transition-all duration-300 font-medium hover:scale-105">
               Sign In
             </Link>
-            <Button asChild size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+            <Button asChild size="sm" className="bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-600 hover:from-blue-700 hover:via-cyan-700 hover:to-indigo-700 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105">
               <Link href="/signup">Sign Up Free</Link>
             </Button>
           </div>
@@ -439,16 +474,27 @@ export default function Home() {
             </motion.div>
             <motion.h1 
               variants={item} 
-              className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight text-white"
+              className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight"
             >
-              Control the <br />
-              <span className="relative ">
-                Cosmos
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-cyan-100">
+                Control the
+              </span>
+              <br />
+              <span className="relative">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-400 to-indigo-400 drop-shadow-2xl">
+                  Cosmos
+                </span>
                 <motion.span 
-                  className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"
-                  initial={{ width: 0 }}
-                  animate={{ width: "100%" }}
+                  className="absolute -bottom-2 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-500 rounded-full shadow-lg shadow-blue-500/50"
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: "100%", opacity: 1 }}
                   transition={{ delay: 1, duration: 0.8 }}
+                />
+                <motion.span 
+                  className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full blur-sm"
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: "100%", opacity: 0.8 }}
+                  transition={{ delay: 1.2, duration: 0.6 }}
                 />
               </span>
             </motion.h1>
@@ -456,23 +502,35 @@ export default function Home() {
               The comprehensive platform for planning, executing, and monitoring space missions of any complexity. From satellite constellations to Mars rovers, SMC handles it all.
             </motion.p>
             <motion.div variants={item} className="flex flex-wrap gap-4">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-glow-blue"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2 }}
               >
-                <Link href="/signup" className="flex items-center gap-2">
-                  Get Started <Rocket className="ml-1 w-4 h-4" />
-                </Link>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="border-blue-500 text-blue-400 hover:bg-blue-950/30"
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-600 text-white hover:from-blue-700 hover:via-cyan-700 hover:to-indigo-700 shadow-2xl shadow-blue-500/40 hover:shadow-blue-500/60 border border-blue-400/20 backdrop-blur-sm"
+                >
+                  <Link href="/signup" className="flex items-center gap-2">
+                    Get Started <Rocket className="ml-1 w-4 h-4" />
+                  </Link>
+                </Button>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2 }}
               >
-                <Link href="/demo" className="flex items-center gap-2">
-                  Watch Demo <ExternalLink className="ml-1 w-4 h-4" />
-                </Link>
-              </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="border-2 border-blue-500/60 text-blue-400 hover:bg-blue-950/50 hover:border-blue-400 backdrop-blur-sm shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 hover:text-blue-300"
+                >
+                  <Link href="/demo" className="flex items-center gap-2">
+                    Watch Demo <ExternalLink className="ml-1 w-4 h-4" />
+                  </Link>
+                </Button>
+              </motion.div>
             </motion.div>
             <motion.div variants={item} className="mt-8 flex items-center gap-4">
               <div className="flex -space-x-2">
@@ -571,10 +629,22 @@ export default function Home() {
             {/* Floating UI elements */}
             <motion.div 
               className="absolute top-1/4 -right-8 md:right-0 p-3 bg-gray-900/80 backdrop-blur-sm rounded-lg border border-indigo-500/30 text-xs shadow-glow-blue max-w-[140px]"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.2, duration: 0.8 }}
-              {...floatAnimation}
+              initial={{ opacity: 0, x: 20, y: 0 }}
+              animate={{ 
+                opacity: 1, 
+                x: 0,
+                y: [0, -10, 0]
+              }}
+              transition={{ 
+                opacity: { delay: 1.2, duration: 0.8 },
+                x: { delay: 1.2, duration: 0.8 },
+                y: { 
+                  duration: 4,
+                  repeat: Infinity,
+                  repeatType: "loop" as const,
+                  ease: "easeInOut" 
+                }
+              }}
             >
               <div className="flex items-center gap-2 text-cyan-500 mb-1">
                 <CheckCircle className="w-3 h-3" />
@@ -585,10 +655,22 @@ export default function Home() {
             
             <motion.div 
               className="absolute bottom-10 -left-10 md:left-0 p-3 bg-gray-900/80 backdrop-blur-sm rounded-lg border border-blue-500/30 text-xs shadow-glow-blue max-w-[140px]"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.4, duration: 0.8 }}
-              {...floatAnimation}
+              initial={{ opacity: 0, x: -20, y: 0 }}
+              animate={{ 
+                opacity: 1, 
+                x: 0,
+                y: [0, -10, 0]
+              }}
+              transition={{ 
+                opacity: { delay: 1.4, duration: 0.8 },
+                x: { delay: 1.4, duration: 0.8 },
+                y: { 
+                  duration: 4,
+                  repeat: Infinity,
+                  repeatType: "loop" as const,
+                  ease: "easeInOut" 
+                }
+              }}
             >
               <div className="flex items-center gap-2 text-indigo-400 mb-1">
                 <BarChart2 className="w-3 h-3" />
@@ -1078,7 +1160,7 @@ export default function Home() {
                     className="bg-gray-900/40 backdrop-blur-lg border border-gray-800 rounded-xl p-8 md:p-12"
                   >
                     <div className="mb-6 relative">
-                      <div className="absolute -top-4 -left-6 text-6xl text-blue-500/20">"</div>
+                      <div className="absolute -top-4 -left-6 text-6xl text-blue-500/20">&ldquo;</div>
                       <p className="text-xl md:text-2xl text-gray-200 relative z-10">
                         {testimonials[activeTestimonial].quote}
                       </p>
@@ -1502,59 +1584,134 @@ export default function Home() {
           </div>
         </footer>
 
-        {/* Add custom styles for stars and animations */}
+        {/* Enhanced custom styles for stars and animations */}
         <style jsx global>{`
           .stars-sm {
-            background-image: radial-gradient(1px 1px at 25% 25%, white 1%, transparent 0),
-                              radial-gradient(1px 1px at 50% 50%, white 1%, transparent 0),
-                              radial-gradient(1px 1px at 75% 75%, white 1%, transparent 0),
-                              radial-gradient(2px 2px at 33% 33%, white 1%, transparent 0),
-                              radial-gradient(2px 2px at 67% 67%, white 1%, transparent 0);
+            background-image: radial-gradient(1px 1px at 25% 25%, rgba(255,255,255,0.8) 1%, transparent 0),
+                              radial-gradient(1px 1px at 50% 50%, rgba(147,197,253,0.6) 1%, transparent 0),
+                              radial-gradient(1px 1px at 75% 75%, rgba(196,181,253,0.5) 1%, transparent 0),
+                              radial-gradient(2px 2px at 33% 33%, rgba(34,211,238,0.4) 1%, transparent 0),
+                              radial-gradient(2px 2px at 67% 67%, rgba(129,140,248,0.3) 1%, transparent 0);
             background-size: 250px 250px;
-            opacity: 0.2;
+            opacity: 0.6;
           }
           
           .stars-md {
-            background-image: radial-gradient(1px 1px at 10% 10%, white 1%, transparent 0),
-                              radial-gradient(1px 1px at 40% 60%, white 1%, transparent 0),
-                              radial-gradient(1.5px 1.5px at 60% 40%, white 1%, transparent 0),
-                              radial-gradient(2px 2px at 90% 90%, white 1%, transparent 0);
+            background-image: radial-gradient(1px 1px at 10% 10%, rgba(255,255,255,0.9) 1%, transparent 0),
+                              radial-gradient(1px 1px at 40% 60%, rgba(59,130,246,0.7) 1%, transparent 0),
+                              radial-gradient(1.5px 1.5px at 60% 40%, rgba(168,85,247,0.6) 1%, transparent 0),
+                              radial-gradient(2px 2px at 90% 90%, rgba(34,211,238,0.5) 1%, transparent 0);
             background-size: 400px 400px;
-            opacity: 0.3;
+            opacity: 0.7;
           }
           
           .stars-lg {
-            background-image: radial-gradient(2px 2px at 20% 80%, white 1%, transparent 0),
-                              radial-gradient(2px 2px at 40% 30%, white 1%, transparent 0),
-                              radial-gradient(2px 2px at 70% 20%, white 1%, transparent 0),
-                              radial-gradient(3px 3px at 80% 70%, white 1%, transparent 0);
+            background-image: radial-gradient(2px 2px at 20% 80%, rgba(255,255,255,1) 1%, transparent 0),
+                              radial-gradient(2px 2px at 40% 30%, rgba(96,165,250,0.8) 1%, transparent 0),
+                              radial-gradient(2px 2px at 70% 20%, rgba(147,51,234,0.7) 1%, transparent 0),
+                              radial-gradient(3px 3px at 80% 70%, rgba(6,182,212,0.6) 1%, transparent 0);
             background-size: 600px 600px;
-            opacity: 0.4;
+            opacity: 0.8;
+          }
+          
+          .animate-twinkle {
+            animation: twinkle 3s ease-in-out infinite alternate;
+          }
+          
+          .animate-twinkle-slow {
+            animation: twinkle 5s ease-in-out infinite alternate;
+          }
+          
+          .animate-twinkle-slower {
+            animation: twinkle 7s ease-in-out infinite alternate;
+          }
+          
+          .animate-pulse-slow {
+            animation: pulse-slow 8s ease-in-out infinite;
+          }
+          
+          .animate-float {
+            animation: float 20s ease-in-out infinite;
+          }
+          
+          .animate-float-slow {
+            animation: float 25s ease-in-out infinite;
+          }
+          
+          .animate-float-reverse {
+            animation: float-reverse 18s ease-in-out infinite;
           }
           
           .shadow-glow-blue {
-            box-shadow: 0 0 15px 1px rgba(56, 189, 248, 0.3);
+            box-shadow: 0 0 20px 2px rgba(56, 189, 248, 0.4);
           }
           
           .shadow-glow-indigo {
-            box-shadow: 0 0 15px 1px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 0 20px 2px rgba(99, 102, 241, 0.4);
           }
           
           .shadow-glow-cyan {
-            box-shadow: 0 0 15px 1px rgba(34, 211, 238, 0.3);
+            box-shadow: 0 0 20px 2px rgba(34, 211, 238, 0.4);
           }
           
           .animate-spin-slow {
             animation: spin 30s linear infinite;
           }
           
+          @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+          }
+          
+          @keyframes pulse-slow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+          }
+          
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(5deg); }
+            66% { transform: translateY(10px) rotate(-3deg); }
+          }
+          
+          @keyframes float-reverse {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(15px) rotate(-4deg); }
+            66% { transform: translateY(-25px) rotate(6deg); }
+          }
+          
           @keyframes spin {
-            from {
-              transform: rotate(0deg);
-            }
-            to {
-              transform: rotate(360deg);
-            }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          
+          /* Enhanced glassmorphism effects */
+          .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          }
+          
+          .glass-effect-strong {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+          
+          /* Gradient text animations */
+          .gradient-text-animated {
+            background: linear-gradient(-45deg, #3b82f6, #06b6d4, #8b5cf6, #3b82f6);
+            background-size: 400% 400%;
+            animation: gradient-shift 8s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }
+          
+          @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
           }
         `}</style>
       </div>

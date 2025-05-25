@@ -1,16 +1,29 @@
 // src/main/java/microservices/mission_service/service/MissionService.java
 package microservices.mission_service.service;
 
-import jakarta.transaction.Transactional;
-import microservices.mission_service.dto.*;
-import microservices.mission_service.model.*;
-import microservices.mission_service.repository.*;
+import java.nio.file.AccessDeniedException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
-import java.util.*;
+import jakarta.transaction.Transactional;
+import microservices.mission_service.dto.MissionCreateRequest;
+import microservices.mission_service.dto.MissionDto;
+import microservices.mission_service.dto.MissionMonthlyCount;
+import microservices.mission_service.dto.MissionOperatorDto;
+import microservices.mission_service.dto.MissionUpdateRequest;
+import microservices.mission_service.model.ActivityLog;
+import microservices.mission_service.model.Mission;
+import microservices.mission_service.model.MissionOperator;
+import microservices.mission_service.model.MissionRole;
+import microservices.mission_service.repository.ActivityLogRepository;
+import microservices.mission_service.repository.MissionOperatorRepository;
+import microservices.mission_service.repository.MissionRepository;
 
 @Service
 @Transactional
@@ -212,7 +225,9 @@ public class MissionService {
     private MissionDto toDto(Mission m) {
         return new MissionDto(
                 m.getId(), m.getEnterpriseId(), m.getName(), m.getDescription(),
-                m.getStartDate().atStartOfDay(), m.getEndDate().atStartOfDay(), m.getStatus(), m.getCreatedAt());
+                m.getStartDate() != null ? m.getStartDate().atStartOfDay() : null, 
+                m.getEndDate() != null ? m.getEndDate().atStartOfDay() : null, 
+                m.getStatus(), m.getCreatedAt());
     }
 
     private MissionOperatorDto toOperatorDto(MissionOperator mo) {
