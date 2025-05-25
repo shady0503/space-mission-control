@@ -4,7 +4,7 @@ import apiClient from "../api/apiClient";
 import { API_CONFIG } from "../api/config";
 
 export interface Operator {
-  id: number;
+  id: string; // Changed from number to string to match UUID format
   username: string;
   email: string;
   role: string;

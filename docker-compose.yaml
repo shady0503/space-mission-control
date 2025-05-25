@@ -264,21 +264,21 @@ services:
       JAVA_TOOL_OPTIONS: -javaagent:/otel/opentelemetry-javaagent.jar
     networks:
     - micro
-  frontend:
-    build: 
-      context: ./mission-control-frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_BACKEND_URL=http://gateway:8080
-      - NEXT_PUBLIC_WS_URL=ws://gateway:8080
-    depends_on:
-      - gateway
-    networks:
-      - micro
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+  # frontend:
+  #   build: 
+  #     context: ./mission-control-frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NEXT_PUBLIC_BACKEND_URL=http://gateway:8080
+  #     - NEXT_PUBLIC_WS_URL=ws://gateway:8080
+  #   depends_on:
+  #     - gateway
+  #   networks:
+  #     - micro
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3

@@ -29,7 +29,7 @@ export interface MissionOperator {
 }
 
 export interface Operator {
-  id: number;
+  id: string; // Changed from number to string to match UUID format
   username: string;
   email: string;
   role: string;
