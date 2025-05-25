@@ -40,8 +40,8 @@ spec:
               value: jdbc:postgresql://postgres-telemetry:5432/telemetry_db
             - name: SPRING_DATASOURCE_USERNAME
               value: telemetry_user
-          image: backup_devops_project-telemetry:latest
-          imagePullPolicy: Never
+          image: chaditaqi/telemetry:latest
+          imagePullPolicy: Always
           name: telemetry
           ports:
             - containerPort: 8080

@@ -1,4 +1,3 @@
-version: '3.8'
 x-otel-common:
   OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
   OTEL_TRACES_EXPORTER: otlp
@@ -87,10 +86,7 @@ services:
     networks:
     - micro
   auth-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: auth-runtime
+    image: chaditaqi/auth-service:latest
     ports:
     - 8081:8080
     depends_on:
@@ -122,10 +118,7 @@ services:
     networks:
     - micro
   entreprise:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: entreprise-runtime
+    image: chaditaqi/entreprise:latest
     ports:
     - 8082:8080
     depends_on:
@@ -153,10 +146,7 @@ services:
     networks:
     - micro
   mission-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: mission-runtime
+    image: chaditaqi/mission-service:latest
     ports:
     - 8083:8080
     depends_on:
@@ -186,10 +176,7 @@ services:
     networks:
     - micro
   spacecraft:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: spacecraft-runtime
+    image: chaditaqi/spacecraft:latest
     ports:
     - 8084:8080
     depends_on:
@@ -217,10 +204,7 @@ services:
     networks:
     - micro
   telemetry:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: telemetry-runtime
+    image: chaditaqi/telemetry:latest
     ports:
     - 8085:8080
     depends_on:
@@ -240,10 +224,7 @@ services:
     networks:
     - micro
   dashboard:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: dashboard-runtime
+    image: chaditaqi/dashboard:latest
     ports:
     - 8086:8080
     depends_on:
@@ -264,10 +245,7 @@ services:
     networks:
     - micro
   gateway:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: gateway-runtime
+    image: chaditaqi/gateway:latest
     ports:
     - 8080:8080
     depends_on:
@@ -287,9 +265,7 @@ services:
     networks:
     - micro
   frontend:
-    build:
-      context: ./mission-control-frontend
-      dockerfile: Dockerfile
+    image: chaditaqi/frontend:latest
     container_name: frontend
     ports:
     - 3000:80

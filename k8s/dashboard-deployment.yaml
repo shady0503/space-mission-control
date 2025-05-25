@@ -35,8 +35,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: dashboard--env
-          image: backup_devops_project-dashboard:latest
-          imagePullPolicy: Never
+          image: chaditaqi/dashboard:latest
+          imagePullPolicy: Always
           name: dashboard
           ports:
             - containerPort: 8080

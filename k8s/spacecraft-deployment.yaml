@@ -38,8 +38,8 @@ spec:
               value: jdbc:postgresql://postgres-spacecraft:5432/spacecraft_db
             - name: SPRING_DATASOURCE_USERNAME
               value: spacecraft_user
-          image: backup_devops_project-spacecraft:latest
-          imagePullPolicy: Never
+          image: chaditaqi/spacecraft:latest
+          imagePullPolicy: Always
           name: spacecraft
           ports:
             - containerPort: 8080

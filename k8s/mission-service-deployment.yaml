@@ -40,8 +40,8 @@ spec:
               value: jdbc:postgresql://postgres-mission:5432/mission_db
             - name: SPRING_DATASOURCE_USERNAME
               value: mission_user
-          image: backup_devops_project-mission-service:latest
-          imagePullPolicy: Never
+          image: chaditaqi/mission-service:latest
+          imagePullPolicy: Always
           name: mission-service
           ports:
             - containerPort: 8080

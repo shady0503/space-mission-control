@@ -42,8 +42,8 @@ spec:
               value: org.postgresql.Driver
             - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
               value: org.hibernate.dialect.PostgreSQLDialect
-          image: backup_devops_project-entreprise:latest
-          imagePullPolicy: Never
+          image: chaditaqi/entreprise:latest
+          imagePullPolicy: Always
           name: entreprise
           ports:
             - containerPort: 8080

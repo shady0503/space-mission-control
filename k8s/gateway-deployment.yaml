@@ -32,8 +32,8 @@ spec:
               value: otlp
             - name: OTEL_TRACES_EXPORTER
               value: otlp
-          image: backup_devops_project-gateway:latest
-          imagePullPolicy: Never
+          image: chaditaqi/gateway:latest
+          imagePullPolicy: Always
           name: gateway
           ports:
             - containerPort: 8080
