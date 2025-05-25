@@ -1,24 +1,28 @@
 package microservices.auth_service.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import microservices.auth_service.client.MissionClient;
 import microservices.auth_service.dto.MissionRole;
 import microservices.auth_service.dto.OperatorResponse;
 import microservices.auth_service.dto.SignupRequest;
 import microservices.auth_service.dto.UpdateOperatorRequest;
 import microservices.auth_service.event.OperatorCreatedEvent;
-import microservices.auth_service.model.MissionOperator;
 import microservices.auth_service.model.Operator;
 import microservices.auth_service.repository.OperatorRepository;
 import microservices.auth_service.utils.JwtUtil;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class OperatorService {
@@ -30,13 +34,13 @@ public class OperatorService {
     private final MissionClient missionClient;
 
     public OperatorService(OperatorRepository operatorRepo,
-                           BCryptPasswordEncoder passwordEncoder,
-                           JwtUtil jwtUtil,
-                           ApplicationEventPublisher events, MissionClient missionClient) {
-        this.operatorRepo    = operatorRepo;
+            BCryptPasswordEncoder passwordEncoder,
+            JwtUtil jwtUtil,
+            ApplicationEventPublisher events, MissionClient missionClient) {
+        this.operatorRepo = operatorRepo;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil         = jwtUtil;
-        this.events          = events;
+        this.jwtUtil = jwtUtil;
+        this.events = events;
         this.missionClient = missionClient;
     }
 
@@ -53,18 +57,15 @@ public class OperatorService {
 
         op = operatorRepo.save(op);
 
-        if(req.email()==null) {
+        if (req.email() == null) {
             op.setEmail("@Null.com");
         }
 
         events.publishEvent(
-                new OperatorCreatedEvent(this, op.getId(), op.getUsername(), op.getEmail())
-        );
+                new OperatorCreatedEvent(this, op.getId(), op.getUsername(), op.getEmail()));
 
         return op;
     }
-
-
 
     public String authenticate(String identifier, String rawPassword) {
         Operator op = operatorRepo.findByUsername(identifier)
@@ -80,8 +81,7 @@ public class OperatorService {
     public MissionClient.MissionOperatorDto updateOperatorRole(
             UUID missionId,
             UUID operatorId,
-            MissionRole newRole
-    ) {
+            MissionRole newRole) {
         // optional: verify operator exists locally
         operatorRepo.findById(operatorId)
                 .orElseThrow(() -> new IllegalArgumentException("Operator not found: " + operatorId));
@@ -90,10 +90,8 @@ public class OperatorService {
         return missionClient.updateOperatorRole(
                 missionId,
                 operatorId,
-                new MissionClient.UpdateOperatorRoleRequest(newRole.name())
-        );
+                new MissionClient.UpdateOperatorRoleRequest(newRole.name()));
     }
-
 
     public String generateTokenFor(String username) {
         Operator op = getByUsername(username);
@@ -125,46 +123,68 @@ public class OperatorService {
                     .orElse(username + "@users.noreply.github.com");
             System.out.println("Extracted email: " + email);
 
-            Optional<Operator> existingOp = operatorRepo.findByUsername(username);
-            System.out.println("User exists in DB: " + existingOp.isPresent());
+            Optional<Operator> existingOpByUsername = operatorRepo.findByUsername(username);
+            Optional<Operator> existingOpByEmail = operatorRepo.findByEmail(email);
 
-            if (existingOp.isPresent()) {
-                Operator op = existingOp.get();
+            System.out.println("User exists by username: " + existingOpByUsername.isPresent());
+            System.out.println("User exists by email: " + existingOpByEmail.isPresent());
+
+            // Case 1: User exists with same username
+            if (existingOpByUsername.isPresent()) {
+                Operator op = existingOpByUsername.get();
                 if (!email.equals(op.getEmail())) {
                     op.setEmail(email);
                     operatorRepo.save(op);
                 }
-            } else {
-                Operator newOp = new Operator();
-                newOp.setUsername(username);
-                newOp.setEmail(email);
-
-                // If this is a GitHub user, they don't need a password for login
-                // But some JPA configurations might require a non-null password
-                if (newOp.getHashedPassword() == null) {
-                    System.out.println("Setting dummy hashed password for OAuth user");
-                    newOp.setHashedPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-                }
-
-                newOp = operatorRepo.save(newOp);
-                System.out.println("New user created with ID: " + newOp.getId());
-
-                events.publishEvent(
-                        new OperatorCreatedEvent(this, newOp.getId(), username, email)
-                );
-                System.out.println("OperatorCreatedEvent published");
+                return;
             }
+
+            // Case 2: User exists with same email but different username (common with
+            // Google auth)
+            if (existingOpByEmail.isPresent()) {
+                if ("google".equalsIgnoreCase(provider)) {
+                    // For Google auth, we allow login with existing email
+                    // No action needed as the handler will generate token for this user
+                    System.out.println("User exists with this email. Using existing account for Google auth.");
+                    return;
+                } else {
+                    // For other providers, we should throw an exception to prevent account linking
+                    // without explicit user consent
+                    throw new IllegalStateException("An account with this email already exists.");
+                }
+            }
+
+            // Case 3: New user - create account
+            Operator newOp = new Operator();
+            newOp.setUsername(username);
+            newOp.setEmail(email);
+
+            // If this is a GitHub user, they don't need a password for login
+            // But some JPA configurations might require a non-null password
+            if (newOp.getHashedPassword() == null) {
+                System.out.println("Setting dummy hashed password for OAuth user");
+                newOp.setHashedPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+            }
+
+            newOp = operatorRepo.save(newOp);
+            System.out.println("New user created with ID: " + newOp.getId());
+
+            events.publishEvent(
+                    new OperatorCreatedEvent(this, newOp.getId(), username, email));
+            System.out.println("OperatorCreatedEvent published");
         } catch (Exception e) {
             System.err.println("ERROR in syncOAuthUser: " + e.getMessage());
             e.printStackTrace();
-            throw e;  // Rethrow to ensure transaction rollback
+            throw e; // Rethrow to ensure transaction rollback
         }
     }
 
     public String detectProvider(String requestUri) {
         String uri = requestUri.toLowerCase();
-        if (uri.contains("github")) return "github";
-        if (uri.contains("google")) return "google";
+        if (uri.contains("github"))
+            return "github";
+        if (uri.contains("google"))
+            return "google";
         return "generic";
     }
 
@@ -177,6 +197,7 @@ public class OperatorService {
             return (String) attrs.getOrDefault("email", attrs.get("name"));
         }
     }
+
     @Transactional
     public Operator updateProfile(UUID id, UpdateOperatorRequest req) {
         Operator op = operatorRepo.findById(id)
@@ -193,7 +214,7 @@ public class OperatorService {
             op.setHashedPassword(hashed);
         }
 
-        if(req.getUsername()!=null && !req.getUsername().isBlank()){
+        if (req.getUsername() != null && !req.getUsername().isBlank()) {
             op.setUsername(req.getUsername());
         }
 
@@ -203,19 +224,18 @@ public class OperatorService {
         // Persist changes
         return operatorRepo.save(op);
     }
+
     public Optional<Operator> findByUsername(String username) {
         return operatorRepo.findByUsername(username);
     }
 
     public List<Operator> findByEnterpriseId(UUID enterpriseId) {
-        return  operatorRepo.findByEnterpriseId(enterpriseId);
+        return operatorRepo.findByEnterpriseId(enterpriseId);
     }
 
     public Long countByEnterpriseId(UUID enterpriseId) {
         return operatorRepo.countOperatorByEnterpriseId(enterpriseId);
     }
-
-
 
     public List<OperatorResponse> search(String searchQuery) {
         if (searchQuery == null || searchQuery.trim().isEmpty()) {
@@ -225,29 +245,26 @@ public class OperatorService {
         String query = searchQuery.toLowerCase().trim();
 
         return operatorRepo.findAll().stream()
-                .filter(operator ->
-                        operator.getUsername().toLowerCase().contains(query) ||
-                                operator.getEmail().toLowerCase().contains(query))
+                .filter(operator -> operator.getUsername().toLowerCase().contains(query) ||
+                        operator.getEmail().toLowerCase().contains(query))
                 .map(op -> new OperatorResponse(
                         op.getId(),
                         op.getUsername(),
                         op.getEmail(),
                         op.getCreatedAt(),
-                        op.getEnterpriseId()
-                ))
+                        op.getEnterpriseId()))
                 .collect(Collectors.toList());
     }
 
     public OperatorResponse addToenterprise(UUID operatorId, UUID enterpriseID) {
         Operator O = operatorRepo.findById(operatorId).isPresent() ? operatorRepo.findById(operatorId).get() : null;
-        if(O==null){
+        if (O == null) {
             throw new IllegalArgumentException("Operator not found");
         }
 
-        if(O.getEnterpriseId()!=null){
+        if (O.getEnterpriseId() != null) {
             throw new IllegalArgumentException("Operator already exists in an Enterprise");
         }
-
 
         O.setEnterpriseId(enterpriseID);
         operatorRepo.save(O);
@@ -256,8 +273,7 @@ public class OperatorService {
                 O.getUsername(),
                 O.getEmail(),
                 O.getCreatedAt(),
-                enterpriseID
-        );
+                enterpriseID);
 
     }
 
@@ -270,8 +286,7 @@ public class OperatorService {
                     op.getUsername(),
                     op.getEmail(),
                     op.getCreatedAt(),
-                    op.getEnterpriseId()
-            ));
+                    op.getEnterpriseId()));
         }
         return opResponses;
     }

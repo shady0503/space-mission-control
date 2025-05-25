@@ -155,7 +155,7 @@ export default function EnterpriseCheck({ children }: { children: React.ReactNod
                   </p>
                   <div className="mt-auto text-center">
                     <Button 
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 h-auto text-lg"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 h-auto text-lg cursor-pointer"
                       onClick={() => setFormView('create-form')}
                     >
                       Create Enterprise
@@ -178,7 +178,7 @@ export default function EnterpriseCheck({ children }: { children: React.ReactNod
                   <div className="mt-auto text-center">
                     <Button 
                       variant="outline"
-                      className="border-gray-700 hover:bg-gray-800 text-gray-300 px-8 py-6 h-auto text-lg"
+                      className="bg-transparent border-blue-300/30 hover:border-blue-300/50 hover:bg-blue-900/10 text-blue-300 hover:text-blue-200 px-8 py-6 h-auto text-lg cursor-pointer transition-all duration-200"
                       onClick={() => setFormView('await-invitation')}
                     >
                       Wait for Invitation
@@ -224,7 +224,7 @@ export default function EnterpriseCheck({ children }: { children: React.ReactNod
                   <p className="text-sm text-green-300 mb-6">Please log out and log in again to access your new enterprise.</p>
                 </div>
                 <Button 
-                  className="bg-green-700 hover:bg-green-800 text-white"
+                  className="bg-green-700 hover:bg-green-800 text-white cursor-pointer"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
                 >
@@ -274,7 +274,7 @@ export default function EnterpriseCheck({ children }: { children: React.ReactNod
                     type="button"
                     variant="outline"
                     onClick={() => setFormView('options')}
-                    className="border-gray-600 hover:bg-gray-700 text-gray-300"
+                    className="border-blue-300/30 hover:border-blue-300/50 hover:bg-blue-900/10 text-blue-300 hover:text-blue-200 cursor-pointer transition-all duration-200"
                     disabled={isSubmitting}
                   >
                     Back
@@ -282,7 +282,7 @@ export default function EnterpriseCheck({ children }: { children: React.ReactNod
                   
                   <Button 
                     type="submit"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
@@ -333,7 +333,7 @@ export default function EnterpriseCheck({ children }: { children: React.ReactNod
             <Button 
               variant="outline"
               onClick={() => setFormView('options')}
-              className="border-gray-600 hover:bg-gray-700 text-gray-300"
+              className="border-blue-300/30 hover:border-blue-300/50 hover:bg-blue-900/10 text-blue-300 hover:text-blue-200 cursor-pointer transition-all duration-200"
             >
               Back to Options
             </Button>

@@ -1,64 +1,64 @@
-version: "3.8"
-
-# ───── reusable OTEL block ───────────────────────────
-x-otel-common: &otel-common
+version: '3.8'
+x-otel-common:
   OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
   OTEL_TRACES_EXPORTER: otlp
-  OTEL_LOGS_EXPORTER:   otlp
-  OTEL_METRICS_EXPORTER: otlp    # ← CHANGED: Now sending metrics via OTLP too!
-  JAVA_TOOL_OPTIONS: "-javaagent:/otel/opentelemetry-javaagent.jar"
-
+  OTEL_LOGS_EXPORTER: otlp
+  OTEL_METRICS_EXPORTER: otlp
+  JAVA_TOOL_OPTIONS: -javaagent:/otel/opentelemetry-javaagent.jar
 networks:
-  micro:
-
+  micro: null
 volumes:
-  kafka_data:
-  zookeeper_data:
-  zookeeper_logs:
-  auth_data:
-  entreprise_data:
-  mission_data:
-  spacecraft_data:
-  telemetry_data:
-  grafana_data:
-
+  kafka_data: null
+  zookeeper_data: null
+  zookeeper_logs: null
+  auth_data: null
+  entreprise_data: null
+  mission_data: null
+  spacecraft_data: null
+  telemetry_data: null
+  grafana_data: null
 services:
-  # ───── LGTM stack (NO prometheus.yml needed!) ──
   lgtm:
     image: grafana/otel-lgtm
     container_name: lgtm
     restart: unless-stopped
     ports:
-      - "4317:4317"                 # OTLP gRPC
-      - "4318:4318"                 # OTLP HTTP
-      - "3002:3000"                 # Grafana Web UI
+    - 4317:4317
+    - 4318:4318
+    - 3002:3000
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+    - GF_SECURITY_ADMIN_USER=admin
+    - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
-      # No prometheus.yml needed! Just like Loki & Tempo
-      - grafana_data:/var/lib/grafana
-    networks: [micro]
+    - grafana_data:/var/lib/grafana
+    networks:
+    - micro
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      test:
+      - CMD
+      - wget
+      - --spider
+      - -q
+      - http://localhost:3000/api/health
       interval: 10s
       timeout: 5s
       retries: 5
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    ports: ["2181:2181"]
-    networks: [micro]
+    ports:
+    - 2181:2181
+    networks:
+    - micro
     volumes:
-      - zookeeper_data:/var/lib/zookeeper/data
-      - zookeeper_logs:/var/lib/zookeeper/log
-
+    - zookeeper_data:/var/lib/zookeeper/data
+    - zookeeper_logs:/var/lib/zookeeper/log
   kafka:
     image: confluentinc/cp-kafka:7.4.0
-    depends_on: [zookeeper]
+    depends_on:
+    - zookeeper
     restart: unless-stopped
     environment:
       KAFKA_BROKER_ID: 1
@@ -68,164 +68,239 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_LOG_DIRS: /var/lib/kafka/data
-    volumes: [kafka_data:/var/lib/kafka/data]
-    ports: ["9092:9092"]
-    networks: [micro]
-
-  # ───── Services below all use the same OTEL config ─────
+    volumes:
+    - kafka_data:/var/lib/kafka/data
+    ports:
+    - 9092:9092
+    networks:
+    - micro
   postgres-auth:
     image: postgres:14
     environment:
       POSTGRES_DB: auth_db
       POSTGRES_USER: auth_user
       POSTGRES_PASSWORD: auth_pass
-    volumes: [auth_data:/var/lib/postgresql/data]
-    networks: [micro]
-
+    volumes:
+    - auth_data:/var/lib/postgresql/data
+    networks:
+    - micro
   auth-service:
     build:
       context: .
       dockerfile: Dockerfile
       target: auth-runtime
-    ports: ["8081:8080"]
-    depends_on: [postgres-auth, kafka, lgtm]
-    volumes: [./auth-service/.env:/app/.env:ro]
+    ports:
+    - 8081:8080
+    depends_on:
+    - postgres-auth
+    - kafka
+    - lgtm
+    volumes:
+    - ./auth-service/.env:/app/.env:ro
     environment:
-      <<: *otel-common              # ← Using OTLP for metrics now
-      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres-auth:5432/auth_db
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      JAVA_TOOL_OPTIONS: -javaagent:/otel/opentelemetry-javaagent.jar
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auth:5432/auth_db
       SPRING_DATASOURCE_USERNAME: auth_user
       SPRING_DATASOURCE_PASSWORD: auth_pass
-      KAFKA_BOOTSTRAP_SERVERS:    kafka:9092
-    networks: [micro]
-
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+    - micro
   postgres-entreprise:
     image: postgres:17
     environment:
       POSTGRES_DB: entreprise_db
       POSTGRES_USER: entreprise_user
       POSTGRES_PASSWORD: entreprise_pass
-    volumes: [entreprise_data:/var/lib/postgresql/data]
-    networks: [micro]
-
+    volumes:
+    - entreprise_data:/var/lib/postgresql/data
+    networks:
+    - micro
   entreprise:
     build:
       context: .
       dockerfile: Dockerfile
       target: entreprise-runtime
-    ports: ["8082:8080"]
-    depends_on: [postgres-entreprise, lgtm]
+    ports:
+    - 8082:8080
+    depends_on:
+    - postgres-entreprise
+    - lgtm
     environment:
-      <<: *otel-common
-      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres-entreprise:5432/entreprise_db
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      JAVA_TOOL_OPTIONS: -javaagent:/otel/opentelemetry-javaagent.jar
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-entreprise:5432/entreprise_db
       SPRING_DATASOURCE_USERNAME: entreprise_user
       SPRING_DATASOURCE_PASSWORD: entreprise_pass
-    networks: [micro]
-
+    networks:
+    - micro
   postgres-mission:
     image: postgres:17
     environment:
       POSTGRES_DB: mission_db
       POSTGRES_USER: mission_user
       POSTGRES_PASSWORD: mission_pass
-    volumes: [mission_data:/var/lib/postgresql/data]
-    networks: [micro]
-
+    volumes:
+    - mission_data:/var/lib/postgresql/data
+    networks:
+    - micro
   mission-service:
     build:
       context: .
       dockerfile: Dockerfile
       target: mission-runtime
-    ports: ["8083:8080"]
-    depends_on: [postgres-mission, kafka, lgtm]
+    ports:
+    - 8083:8080
+    depends_on:
+    - postgres-mission
+    - kafka
+    - lgtm
     environment:
-      <<: *otel-common
-      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres-mission:5432/mission_db
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      JAVA_TOOL_OPTIONS: -javaagent:/otel/opentelemetry-javaagent.jar
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-mission:5432/mission_db
       SPRING_DATASOURCE_USERNAME: mission_user
       SPRING_DATASOURCE_PASSWORD: mission_pass
-      KAFKA_BOOTSTRAP_SERVERS:    kafka:9092
-    networks: [micro]
-
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+    - micro
   postgres-spacecraft:
     image: postgres:17
     environment:
       POSTGRES_DB: spacecraft_db
       POSTGRES_USER: spacecraft_user
       POSTGRES_PASSWORD: spacecraft_pass
-    volumes: [spacecraft_data:/var/lib/postgresql/data]
-    networks: [micro]
-
+    volumes:
+    - spacecraft_data:/var/lib/postgresql/data
+    networks:
+    - micro
   spacecraft:
     build:
       context: .
       dockerfile: Dockerfile
       target: spacecraft-runtime
-    ports: ["8084:8080"]
-    depends_on: [postgres-spacecraft, lgtm]
+    ports:
+    - 8084:8080
+    depends_on:
+    - postgres-spacecraft
+    - lgtm
     environment:
-      <<: *otel-common
-      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres-spacecraft:5432/spacecraft_db
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      JAVA_TOOL_OPTIONS: -javaagent:/otel/opentelemetry-javaagent.jar
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-spacecraft:5432/spacecraft_db
       SPRING_DATASOURCE_USERNAME: spacecraft_user
       SPRING_DATASOURCE_PASSWORD: spacecraft_pass
-    networks: [micro]
-
+    networks:
+    - micro
   postgres-telemetry:
     image: timescale/timescaledb:latest-pg17
     environment:
       POSTGRES_DB: telemetry_db
       POSTGRES_USER: telemetry_user
       POSTGRES_PASSWORD: telemetry_pass
-    volumes: [telemetry_data:/var/lib/postgresql/data]
-    networks: [micro]
-
+    volumes:
+    - telemetry_data:/var/lib/postgresql/data
+    networks:
+    - micro
   telemetry:
     build:
       context: .
       dockerfile: Dockerfile
       target: telemetry-runtime
-    ports: ["8085:8080"]
-    depends_on: [postgres-telemetry, kafka, lgtm]
+    ports:
+    - 8085:8080
+    depends_on:
+    - postgres-telemetry
+    - kafka
+    - lgtm
     environment:
-      <<: *otel-common
-      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres-telemetry:5432/telemetry_db
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      JAVA_TOOL_OPTIONS: -javaagent:/otel/opentelemetry-javaagent.jar
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-telemetry:5432/telemetry_db
       SPRING_DATASOURCE_USERNAME: telemetry_user
       SPRING_DATASOURCE_PASSWORD: telemetry_pass
-      KAFKA_BOOTSTRAP_SERVERS:    kafka:9092
-    networks: [micro]
-
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+    - micro
   dashboard:
     build:
       context: .
       dockerfile: Dockerfile
       target: dashboard-runtime
-    ports: ["8086:8080"]
+    ports:
+    - 8086:8080
     depends_on:
-      - auth-service
-      - entreprise
-      - mission-service
-      - spacecraft
-      - telemetry
-      - lgtm
-    env_file: [./dashboard/.env]
+    - auth-service
+    - entreprise
+    - mission-service
+    - spacecraft
+    - telemetry
+    - lgtm
+    env_file:
+    - ./dashboard/.env
     environment:
-      <<: *otel-common
-    networks: [micro]
-
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      JAVA_TOOL_OPTIONS: -javaagent:/otel/opentelemetry-javaagent.jar
+    networks:
+    - micro
   gateway:
     build:
       context: .
       dockerfile: Dockerfile
       target: gateway-runtime
-    ports: ["8080:8080"]
+    ports:
+    - 8080:8080
     depends_on:
-      - auth-service
-      - entreprise
-      - mission-service
-      - spacecraft
-      - telemetry
-      - dashboard
-      - lgtm
+    - auth-service
+    - entreprise
+    - mission-service
+    - spacecraft
+    - telemetry
+    - dashboard
+    - lgtm
     environment:
-      <<: *otel-common
-    networks: [micro]
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      JAVA_TOOL_OPTIONS: -javaagent:/otel/opentelemetry-javaagent.jar
+    networks:
+    - micro
+  frontend:
+    build:
+      context: ./mission-control-frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+    - 3000:80
+    networks:
+    - micro
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost/
+      interval: 30s
+      timeout: 5s
+      retries: 3

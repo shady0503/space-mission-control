@@ -1,10 +1,9 @@
 package microservices.auth_service.handler;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import microservices.auth_service.repository.OperatorRepository;
-import microservices.auth_service.service.OperatorService;
-import microservices.auth_service.utils.JwtUtil;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,8 +12,12 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import microservices.auth_service.model.Operator;
+import microservices.auth_service.repository.OperatorRepository;
+import microservices.auth_service.service.OperatorService;
+import microservices.auth_service.utils.JwtUtil;
 
 @Component
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
@@ -39,8 +42,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest req,
-                                        HttpServletResponse res,
-                                        Authentication auth)
+            HttpServletResponse res,
+            Authentication auth)
             throws IOException {
         try {
             logger.info("===== OAuth2 Authentication Success Handler =====");
@@ -94,9 +97,27 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
             if (!userExists) {
                 logger.info("Creating new user: {}", username);
-                // Create a new user
-                operatorService.syncOAuthUser(oauth, provider);
-                logger.info("User created successfully");
+                try {
+                    // Create a new user
+                    operatorService.syncOAuthUser(oauth, provider);
+                    logger.info("User created successfully");
+                } catch (IllegalStateException e) {
+                    logger.error("Account linking error: {}", e.getMessage());
+                    res.sendRedirect(frontendUrl + "/callback?error=auth_failed&message=" +
+                            java.net.URLEncoder.encode(e.getMessage(), "UTF-8"));
+                    return;
+                }
+            }
+
+            // For Google auth, check if we have a user with this email but different
+            // username
+            if ("google".equals(provider)) {
+                Optional<Operator> existingUserByEmail = operatorRepository.findByEmail(username);
+                if (existingUserByEmail.isPresent() && !existingUserByEmail.get().getUsername().equals(username)) {
+                    // Use the existing username for token generation
+                    username = existingUserByEmail.get().getUsername();
+                    logger.info("Using existing account with username: {} for Google auth", username);
+                }
             }
 
             // Generate token

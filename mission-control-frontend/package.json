@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:prod": "next build --no-lint",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "next export"
   },
   "dependencies": {
     "@nivo/bar": "^0.88.0",
@@ -26,7 +28,7 @@
     "@react-three/fiber": "^9.1.0",
     "@react-three/postprocessing": "^3.0.4",
     "@tailwindcss/node": "^4.1.5",
-    "@tailwindcss/oxide-win32-x64-msvc": "^4.1.5",
+    "@tailwindcss/oxide": "^4.1.5",
     "@tanstack/react-query": "^5.69.0",
     "axios": "^1.8.4",
     "class-variance-authority": "^0.7.1",

@@ -7,8 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -17,13 +15,9 @@ import {
   Edit,
   Save,
   Rocket,
-  Globe,
-  Activity,
   Clock,
-  Terminal,
   AlertTriangle,
   CheckCircle2,
-  Radio
 } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
@@ -70,13 +64,7 @@ export default function SatelliteDetailPage() {
   const [commands, setCommands] = useState<Command[]>([]);
   const [editing, setEditing] = useState(false);
   const [editedSpacecraft, setEditedSpacecraft] = useState<Partial<SpacecraftInfo>>({});
-  const [issueCommandOpen, setIssueCommandOpen] = useState(false);
-  const [newCommand, setNewCommand] = useState({
-    commandType: CommandType.ADJUST_TRAJECTORY,
-    payload: '{}'
-  });
   const [savingChanges, setSavingChanges] = useState(false);
-  const [sendingCommand, setSendingCommand] = useState(false);
   const [executingCommand, setExecutingCommand] = useState<number | null>(null);
   const [telemetryData, setTelemetryData] = useState<LatestTelemetryPoint | null>(null);
 
@@ -151,48 +139,6 @@ export default function SatelliteDetailPage() {
       setSavingChanges(false);
     }
   }, [spacecraft, editedSpacecraft]);
-
-  // Handle issuing commands
-  const handleIssueCommand = useCallback(async () => {
-    if (!spacecraft || !mission) return;
-
-    setSendingCommand(true);
-    try {
-      let payload = {};
-      // Try to parse payload JSON if not empty
-      if (newCommand.payload && newCommand.payload !== '{}') {
-        try {
-          payload = JSON.parse(newCommand.payload);
-        } catch (e) {
-          console.error('Invalid payload JSON:', e);
-          alert('Please enter valid JSON for the payload');
-          setSendingCommand(false);
-          return;
-        }
-      }
-
-      // Issue the command
-      await commandService.issueCommand(
-        {
-          spacecraftId  : spacecraft.id,
-          commandType: newCommand.commandType,
-          operatorId: operatorId,
-          status: false,
-          payload: JSON.stringify(payload),
-        }
-      );
-
-      // Refresh commands list
-      fetchSpacecraftData();
-
-      setIssueCommandOpen(false);
-      setSendingCommand(false);
-
-    } catch (error) {
-      console.error('Error issuing command:', error);
-      setSendingCommand(false);
-    }
-  }, [spacecraft, mission, newCommand, fetchSpacecraftData]);
 
   // Handle executing a command
   const handleExecuteCommand = useCallback(async (command: Command) => {
@@ -428,55 +374,6 @@ export default function SatelliteDetailPage() {
                 )}
               </CardContent>
             </Card>
-
-            {/* Visualization Card */}
-            <Card className="bg-[#1a2236] border-[#2a3750] mt-6">
-              <CardHeader>
-                <CardTitle className="text-xl text-white">Satellite Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center">
-                  {/* Orbit Visualization */}
-                  <div className="relative w-48 h-48 mb-4">
-                    <div className="absolute inset-0 rounded-full border border-[#2a3750]"></div>
-                    <div className="absolute inset-3 rounded-full border border-blue-700/30"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-blue-900/30 rounded-full flex items-center justify-center">
-                        <Globe className="h-8 w-8 text-blue-400/80" />
-                      </div>
-                    </div>
-                    <div
-                      className="absolute w-3 h-3 bg-blue-400 rounded-full shadow-lg shadow-blue-500/50"
-                      style={{
-                        left: `${50 + 35 * Math.cos(Date.now() / 1000 % (2 * Math.PI))}%`,
-                        top: `${50 + 35 * Math.sin(Date.now() / 1000 % (2 * Math.PI))}%`,
-                        animation: 'pulse 2s infinite'
-                      }}
-                    ></div>
-                  </div>
-
-                  {/* Status Indicators */}
-                  <div className="grid grid-cols-2 gap-3 w-full">
-                    <div className="flex items-center gap-2 text-green-400">
-                      <Radio className="h-4 w-4" />
-                      <span>Signal: Strong</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-green-400">
-                      <Activity className="h-4 w-4" />
-                      <span>Systems: Nominal</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-amber-400">
-                      <Battery className="h-4 w-4" />
-                      <span>Power: 78%</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-green-400">
-                      <Thermometer className="h-4 w-4" />
-                      <span>Temp: Normal</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Right Column - Commands and Telemetry */}
@@ -502,74 +399,11 @@ export default function SatelliteDetailPage() {
                 <Card className="bg-[#1a2236] border-[#2a3750]">
                   <CardHeader className="flex flex-row justify-between items-center pb-2">
                     <CardTitle className="text-xl text-white">Command History</CardTitle>
-                    <Dialog open={issueCommandOpen} onOpenChange={setIssueCommandOpen}>
-                      <DialogTrigger asChild>
-                        <Button className="bg-blue-700 hover:bg-blue-800">
-                          <Rocket className="mr-2 h-4 w-4" /> Issue Command
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-[#1a2236] border-[#2a3750] text-white">
-                        <DialogHeader>
-                          <DialogTitle className="text-blue-400">Issue New Command</DialogTitle>
-                          <DialogDescription className="text-gray-400">
-                            Send a command to {spacecraft.displayName || spacecraft.externalName}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="commandType" className="text-gray-300">Command Type</Label>
-                            <Select
-                              value={newCommand.commandType}
-                              onValueChange={(value) => setNewCommand(prev => ({ ...prev, commandType: value as CommandType }))}
-                            >
-                              <SelectTrigger className="bg-[#0f1628] border-[#2a3750] text-white">
-                                <SelectValue placeholder="Select command" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-[#1a2236] border-[#2a3750] text-white">
-                                {Object.values(CommandType).map(type => (
-                                  <SelectItem key={type} value={type}>
-                                    {type.replace(/_/g, ' ')}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="payload" className="text-gray-300">Payload (JSON)</Label>
-                            <Textarea
-                              id="payload"
-                              value={newCommand.payload}
-                              onChange={(e) => setNewCommand(prev => ({ ...prev, payload: e.target.value }))}
-                              className="font-mono bg-[#0f1628] border-[#2a3750] text-white min-h-[100px]"
-                              placeholder="{}"
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button
-                            variant="outline"
-                            onClick={() => setIssueCommandOpen(false)}
-                            className="bg-[#0f1628] hover:bg-[#2a3750] text-white border-[#2a3750]"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={handleIssueCommand}
-                            disabled={sendingCommand}
-                            className="bg-blue-700 hover:bg-blue-800 text-white"
-                          >
-                            {sendingCommand ? <LoadingSpinner size="small" className="mr-2" /> : <Terminal className="mr-2 h-4 w-4" />}
-                            Send Command
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
                   </CardHeader>
                   <CardContent>
                     {commands.length === 0 ? (
                       <div className="text-center py-8 text-gray-400">
-                        No commands have been issued to this spacecraft yet.
+                        Command functionality has been disabled for this spacecraft.
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
@@ -601,25 +435,24 @@ export default function SatelliteDetailPage() {
                                   )}
                                 </TableCell>
                                 <TableCell className="text-gray-300">
-                                  {formatDate(command.createdAt)}
+                                  {command.createdAt ? formatDate(command.createdAt) : 'Unknown'}
                                 </TableCell>
                                 <TableCell className="text-gray-300">
-                                  {command.executedAt ? formatDate(command.executedAt) : '-'}
+                                  {command.executedAt ? formatDate(command.executedAt) : 'Not yet'}
                                 </TableCell>
                                 <TableCell>
                                   {!command.status && (
                                     <Button
-                                      onClick={() => handleExecuteCommand(command)}
-                                      disabled={!!executingCommand}
-                                      size="sm"
-                                      className="bg-green-700 hover:bg-green-800 text-white h-8"
+                                      disabled={true}
+                                      variant="ghost"
+                                      className="h-8 w-8 p-0 text-gray-400"
+                                      title="Command functionality has been disabled"
                                     >
                                       {executingCommand === command.id ? (
-                                        <LoadingSpinner size="small" className="mr-1" />
+                                        <LoadingSpinner size="small" />
                                       ) : (
-                                        <Terminal className="mr-1 h-3 w-3" />
+                                        <Rocket className="h-4 w-4" />
                                       )}
-                                      Execute
                                     </Button>
                                   )}
                                 </TableCell>
@@ -649,38 +482,3 @@ export default function SatelliteDetailPage() {
     </div>
   );
 }
-
-// Missing components defined here
-const Battery = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <rect x="2" y="7" width="16" height="10" rx="2" ry="2" />
-    <line x1="22" y1="11" x2="22" y2="13" />
-    <line x1="6" y1="7" x2="6" y2="17" />
-    <line x1="10" y1="7" x2="10" y2="17" />
-    <line x1="14" y1="7" x2="14" y2="17" />
-  </svg>
-);
-
-const Thermometer = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
-  </svg>
-);
