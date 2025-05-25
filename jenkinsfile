@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_USER = 'imanebenabbou' 
+        IMAGE_TAG = 'latest'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build, Push and Deploy Services') {
+            steps {
+                script {
+                    def services = ['auth-service', 'dashboard', 'entreprise', 'gateway', 'mission-service', 'spacecraft', 'telemetry']
+
+                    services.each { service ->
+                        echo "Processing ${service}"
+
+                        // Build Docker image
+                        sh "docker build -f Dockerfile -t ${DOCKER_USER}/${service}:${IMAGE_TAG} ."
+
+                        // Push to Docker Hub
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                            sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                            sh "docker push ${DOCKER_USER}/${service}:${IMAGE_TAG}"
+                        }
+
+                        // Deploy to Kubernetes
+                        sh "kubectl apply -f k8s/${service}-deployment.yaml"
+
+                        // Verify Deployment
+                        sh "kubectl rollout status deployment/${service}"
+                    }
+                }
+            }
+        }
+    }
+}
