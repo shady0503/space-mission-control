@@ -88,7 +88,7 @@ services:
   auth-service:
     image: chaditaqi/auth-service:latest
     ports:
-    - 8081:8080
+    - 8087:8080
     depends_on:
     - postgres-auth
     - kafka
@@ -265,18 +265,20 @@ services:
     networks:
     - micro
   frontend:
-    image: chaditaqi/frontend:latest
-    container_name: frontend
+    build: 
+      context: ./mission-control-frontend
+      dockerfile: Dockerfile
     ports:
-    - 3000:80
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://gateway:8080
+      - NEXT_PUBLIC_WS_URL=ws://gateway:8080
+    depends_on:
+      - gateway
     networks:
-    - micro
+      - micro
     healthcheck:
-      test:
-      - CMD
-      - curl
-      - -f
-      - http://localhost/
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       interval: 30s
       timeout: 5s
       retries: 3

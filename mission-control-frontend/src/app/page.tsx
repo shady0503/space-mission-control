@@ -130,49 +130,35 @@ export default function Home() {
     },
   ];
 
-  // Extended team data with bios and achievements
+  // Updated team data with real software engineering students
   const team = [
     { 
-      name: "Dr. Alice Zenith", 
-      role: "Mission Architect", 
-      bio: "Former NASA JPL lead with 15+ years experience designing interplanetary missions. PhD in Aerospace Engineering from MIT.",
-      achievement: "Designed trajectory for the Europa Clipper mission, saving 2 years of transit time.",
-      image: "/team/alice.jpg" // This would be a real image path in production
+      name: "Chadi", 
+      role: "Full-Stack Developer", 
+      bio: "Software Engineering student specializing in backend systems and API development. Passionate about scalable architecture and space technology.",
+      achievement: "Led the development of the mission control backend infrastructure, implementing real-time telemetry processing.",
+      image: "/team/chadi.jpeg"
     },
     { 
-      name: "Bob Orion", 
-      role: "Lead Systems Engineer", 
-      bio: "Specialized in satellite constellation management systems. Previously worked on the Starlink deployment team at SpaceX.",
-      achievement: "Developed fault-tolerance protocols now used in 70% of commercial satellite systems.",
-      image: "/team/bob.jpg"
+      name: "Chaymae", 
+      role: "Frontend Developer & UI/UX Designer", 
+      bio: "Software Engineering student with expertise in React and modern web technologies. Focuses on creating intuitive user experiences for complex systems.",
+      achievement: "Designed and implemented the responsive dashboard interface, improving user workflow efficiency by 40%.",
+      image: "/team/chaymae.jpeg"
     },
     { 
-      name: "Dr. Carol Nova", 
-      role: "Data Science Director", 
-      bio: "Expert in telemetry analysis and predictive modeling for space systems. Holds patents in real-time anomaly detection algorithms.",
-      achievement: "Created the COSMOS predictive maintenance system that reduced mission failures by 47%.",
-      image: "/team/carol.jpg"
+      name: "Imane", 
+      role: "Data Engineer & Analytics Specialist", 
+      bio: "Software Engineering student specializing in data processing and visualization. Expert in handling large-scale telemetry data and real-time analytics.",
+      achievement: "Developed the telemetry data pipeline that processes over 10,000 data points per second with 99.9% accuracy.",
+      image: "/team/imane.jpeg"
     },
     { 
-      name: "Dave Polaris", 
-      role: "UI/UX Lead Designer", 
-      bio: "Specializes in mission-critical interfaces where user error must be minimized. Background in cognitive psychology and human factors.",
-      achievement: "Redesigned control interfaces used in the International Space Station, improving task completion time by 23%.",
-      image: "/team/dave.jpg"
-    },
-    { 
-      name: "Elena Meridian", 
-      role: "Orbital Dynamics Specialist", 
-      bio: "Mathematician focused on complex orbital calculations and trajectory optimization. Previously with ESA's Space Debris Office.",
-      achievement: "Developed new algorithms for multi-body gravitational calculations that improved accuracy by 35%.",
-      image: "/team/elena.jpg"
-    },
-    { 
-      name: "Felix Quasar", 
-      role: "Communications Systems Architect", 
-      bio: "Expert in deep space communication protocols and high-bandwidth data transmission under extreme conditions.",
-      achievement: "Pioneered quantum-encrypted communication systems for cislunar operations.",
-      image: "/team/felix.jpg"
+      name: "Saad", 
+      role: "DevOps Engineer & System Architect", 
+      bio: "Software Engineering student focused on cloud infrastructure and deployment automation. Ensures system reliability and scalability.",
+      achievement: "Architected the containerized deployment system, reducing deployment time from hours to minutes.",
+      image: "/team/saad.jpeg"
     },
   ];
 
@@ -656,6 +642,57 @@ export default function Home() {
                 <p className="text-gray-400">Mission Data Analyzed</p>
               </motion.div>
             </div>
+          </div>
+        </motion.section>
+
+        {/* Student Project Section */}
+        <motion.section
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="py-16 bg-gradient-to-r from-indigo-900/20 to-blue-900/20"
+        >
+          <div className="container mx-auto px-6">
+            <motion.div 
+              variants={item} 
+              className="max-w-4xl mx-auto text-center"
+            >
+              <Badge className="mb-4 bg-green-900/50 text-green-300 border-green-700 px-3 py-1">
+                Academic Project
+              </Badge>
+              <h2 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-green-200 to-blue-200">
+                Built by Software Engineering Students
+              </h2>
+              <p className="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">
+                This Space Mission Control platform is a comprehensive academic project developed by a team of passionate software engineering students. 
+                Our goal is to demonstrate modern web development practices, real-time data processing, and complex system architecture 
+                while exploring the fascinating world of space technology.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+                <motion.div variants={item} className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
+                    <BookOpen className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-white">Learning-Driven</h3>
+                  <p className="text-gray-300">Applying cutting-edge technologies and best practices learned in our software engineering curriculum.</p>
+                </motion.div>
+                <motion.div variants={item} className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-600 to-blue-600 flex items-center justify-center">
+                    <Users className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-white">Collaborative</h3>
+                  <p className="text-gray-300">Developed through teamwork, code reviews, and agile methodologies to simulate real-world development.</p>
+                </motion.div>
+                <motion.div variants={item} className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
+                    <Rocket className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-white">Innovation-Focused</h3>
+                  <p className="text-gray-300">Pushing boundaries by combining space technology concepts with modern software architecture.</p>
+                </motion.div>
+              </div>
+            </motion.div>
           </div>
         </motion.section>
 
@@ -1207,16 +1244,16 @@ export default function Home() {
                 Our Team
               </Badge>
               <h2 className="text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-blue-200">
-                Meet the Crew
+                Meet the Development Team
               </h2>
               <p className="text-xl text-gray-300">
-                Space industry veterans with decades of combined mission experience.
+                Passionate software engineering students building the future of space mission control.
               </p>
             </motion.div>
             
             <motion.div
               variants={staggerItems}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto"
             >
               {team.map((member, idx) => (
                 <motion.div 
@@ -1226,12 +1263,14 @@ export default function Home() {
                 >
                   <Card className="h-full bg-gray-900/50 backdrop-blur-lg border-gray-800 hover:border-indigo-700/50 transition-colors overflow-hidden">
                     <div className="h-48 w-full relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 to-indigo-900/60"></div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-                          <Users className="w-10 h-10 text-white opacity-70" />
-                        </div>
-                      </div>
+                      <Image
+                        src={member.image}
+                        alt={member.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent"></div>
                     </div>
                     
                     <CardHeader>
