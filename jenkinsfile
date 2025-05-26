@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USER = 'imanebenabbou' 
+        DOCKER_USER = 'imanebenabbou'
         IMAGE_TAG = 'latest'
     }
 
@@ -22,20 +22,21 @@ pipeline {
                         echo "Processing ${service}"
 
                         // Build Docker image
-                        sh "docker build -f Dockerfile -t ${DOCKER_USER}/${service}:${IMAGE_TAG} ."
+                        bat "docker build -f Dockerfile -t %DOCKER_USER%/${service}:%IMAGE_TAG% ."
 
                         // Push to Docker Hub
                         withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                            sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                            sh "docker push ${DOCKER_USER}/${service}:${IMAGE_TAG}"
+                            bat '''
+                            echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                            docker push %DOCKER_USER%/${service}:%IMAGE_TAG%
+                            '''
                         }
 
-                        // Deploy to Kubernetes
-                        sh 'export KUBECONFIG=/root/.kube/config && kubectl apply -f k8s/auth-service-deployment.yaml'
-
+                        // Deploy to Kubernetes (only works if `kubectl` is installed and configured properly on Windows)
+                        bat 'set KUBECONFIG=C:\\Users\\DELL\\.kube\\config && kubectl apply -f k8s\\auth-service-deployment.yaml'
 
                         // Verify Deployment
-                        sh "kubectl rollout status deployment/${service}"
+                        bat "kubectl rollout status deployment/${service}"
                     }
                 }
             }
