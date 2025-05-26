@@ -36,8 +36,7 @@ pipeline {
                             variable: 'KUBECONFIG'
                         )]) {
                             bat """
-                                kubectl --kubeconfig="%KUBECONFIG%" apply -f k8s\\${service}-deployment.yaml
-                                kubectl --kubeconfig="%KUBECONFIG%" rollout status deployment/${service}
+                                kubectl --kubeconfig="%KUBECONFIG%" apply -f k8s\\
                             """
                         }
                     }
