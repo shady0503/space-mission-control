@@ -33,7 +33,7 @@ pipeline {
                         }
 
                         // Deploy to Kubernetes (only works if `kubectl` is installed and configured properly on Windows)
-                        bat 'set KUBECONFIG=C:\\Users\\DELL\\.kube\\config && kubectl apply -f k8s\\auth-service-deployment.yaml'
+                        bat 'set KUBECONFIG=C:\Users\DELL\.kube\config && kubectl apply -f k8s\auth-service-deployment.yaml'
 
                         // Verify Deployment
                         bat "kubectl rollout status deployment/${service}"
