@@ -26,10 +26,10 @@ pipeline {
 
                         // Push to Docker Hub
                         withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                            bat "
-                            docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-                            docker push %DOCKER_USER%/${service}:${IMAGE_TAG}
-                            "
+                            bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                            
+                            bat "docker push %DOCKER_USER%/${service}:${IMAGE_TAG}"
+                            
                         }
 
                         // Deploy to Kubernetes (only works if `kubectl` is installed and configured properly on Windows)
