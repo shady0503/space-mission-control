@@ -31,12 +31,15 @@ pipeline {
                             bat "docker push %DOCKER_USER%/${service}:${IMAGE_TAG}"
                             
                         }
-
-                        // Deploy to Kubernetes (only works if `kubectl` is installed and configured properly on Windows)
-                            bat "set KUBECONFIG=C:\\Users\\DELL\\.kube\\config && kubectl apply -f k8s\\${service}-deployment.yaml"
-
-                        // Verify Deployment
-                        bat "kubectl rollout status deployment/${service}"
+                        withCredentials([file(
+                            credentialsId: 'kubeconfig-production',
+                            variable: 'KUBECONFIG'
+                        )]) {
+                            bat """
+                                kubectl --kubeconfig="%KUBECONFIG%" apply -f k8s\\${service}-deployment.yaml
+                                kubectl --kubeconfig="%KUBECONFIG%" rollout status deployment/${service}
+                            """
+                        }
                     }
                 }
             }
