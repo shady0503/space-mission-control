@@ -29,7 +29,7 @@ export const operatorService = {
    * @param id Operator ID
    * @returns Operator details
    */
-  getOperator: async (id: number): Promise<Operator> => {
+  getOperator: async (id: string): Promise<Operator> => {
     return apiClient.get(`${API_CONFIG.ENDPOINTS.MISSIONS.BASE}/operator/${id}`);
   },
 
@@ -41,15 +41,15 @@ export const operatorService = {
     return apiClient.get(`http://localhost:8080/api/operator/enterprise/${enterpriseId}`);
   },
 
-  getTeamMembers: async (operatorId: number): Promise<any[]> => {
+  getTeamMembers: async (operatorId: string): Promise<any[]> => {
     return apiClient.get(`${API_CONFIG.ENDPOINTS.OPERATOR.TEAM_MEMBERS}`);
   },
 
-  getOperatorById: async (id: number): Promise<Operator> => {
+  getOperatorById: async (id: string): Promise<Operator> => {
     return apiClient.get(`${API_CONFIG.ENDPOINTS.OPERATOR.ID}/${id}`);
   },
 
-    updateOperatorRole: async (missionId: number ,operatorId: number, role: string): Promise<Operator> => {
+    updateOperatorRole: async (missionId: number ,operatorId: string, role: string): Promise<Operator> => {
       console.log("payload: " +
 JSON.stringify(        {
   missionId,

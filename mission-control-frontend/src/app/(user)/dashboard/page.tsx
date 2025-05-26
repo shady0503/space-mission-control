@@ -60,6 +60,7 @@ export default function DashboardPage() {
     requestInProgressRef.current = true;
 
     try {
+      console.log('Fetching dashboard data for user:', user);
       const [summary, missions, spacecraft, commands, telemetry, enterprise] = await Promise.all([
         dashboardService.getSummary(user.id),
         dashboardService.getMissionStats(user.id),

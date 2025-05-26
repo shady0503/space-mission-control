@@ -39,7 +39,12 @@ export interface UserData {
 const EMPTY_USER = Object.freeze({});
 
 // Use a global cache to share auth state across components
-let globalAuthCache = {
+let globalAuthCache: {
+  isAuthenticated: boolean;
+  user: UserData | typeof EMPTY_USER;
+  token: string | null;
+  lastChecked: number;
+} = {
   isAuthenticated: false,
   user: EMPTY_USER,
   token: null,
@@ -144,7 +149,7 @@ export const useAuth = () => {
     }
 
     sessionRef.current = session;
-    console.log(session?.user);
+    console.log("session user" , session?.user);
 
     // Only update global cache if this is a "fresh" session check
     if (session && Date.now() - authCheckTimestampRef.current > 1000) {

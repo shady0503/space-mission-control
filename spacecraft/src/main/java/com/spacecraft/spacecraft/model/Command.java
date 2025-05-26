@@ -1,12 +1,23 @@
 // src/main/java/com/spacecraft/spacecraft/model/Command.java
 package com.spacecraft.spacecraft.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-import jakarta.persistence.*;
 import java.util.Date;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 @Entity
 @Table(name = "command")
@@ -30,9 +41,8 @@ public class Command {
     @Column(name = "operator_id", columnDefinition = "uuid", nullable = false)
     private UUID operatorId;
 
-    // Use JdbcTypeCode for Hibernate 6+ to handle JSONB properly
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "payload", columnDefinition = "jsonb")
+    // Use TEXT for H2 compatibility, JSONB for PostgreSQL
+    @Column(name = "payload", columnDefinition = "TEXT")
     private String payload;
 
     @Column(nullable = false)

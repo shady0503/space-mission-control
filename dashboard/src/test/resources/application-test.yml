@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            url: http://localhost:8080
+            connect-timeout: 5000
+            read-timeout: 5000
+
+# Mock service URLs for testing
+MISSION_SERVICE_URL: localhost:8081
+SPACECRAFT_SERVICE_URL: localhost:8082
+TELEMETRY_SERVICE_URL: localhost:8083
+OPERATOR_SERVICE_URL: localhost:8084
+
+logging:
+  level:
+    com.dashboard: DEBUG
+    org.springframework.web: DEBUG 

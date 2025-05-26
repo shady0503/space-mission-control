@@ -118,7 +118,6 @@ const config = {
           }
           
           // Decode the JWT token to extract user information
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let userInfo: Record<string, any> = {};
           try {
             const tokenParts = responseData.token.split('.');
@@ -133,19 +132,54 @@ const config = {
             console.error('Error decoding JWT:', decodeError);
           }
           
-          // Construct the user object for NextAuth
+          // CRITICAL FIX: Always use userInfo.id for the UUID, ignore userInfo.sub if it's a username
+          console.log('=== DEBUGGING USER ID EXTRACTION ===');
+          console.log('userInfo.id (should be UUID):', userInfo.id);
+          console.log('userInfo.sub (might be username, ignore if not UUID):', userInfo.sub);
+          console.log('userInfo.username:', userInfo.username);
+          console.log('responseData.id:', responseData.id);
+          
+          // Always prioritize userInfo.id as it contains the actual UUID
+          const actualUserId = userInfo.id || responseData.id;
+          const username = userInfo.username || responseData.username;
+          const identifier = String(credentials.identifier || '');
+          
+          console.log('=== FINAL ID ASSIGNMENT ===');
+          console.log('actualUserId (UUID):', actualUserId);
+          console.log('username:', username);
+          
+          // Validate that we have a proper UUID
+          if (!actualUserId) {
+            console.error('=== CRITICAL: NO USER ID FOUND IN BACKEND RESPONSE ===');
+            console.error('Backend must provide user ID in JWT payload');
+            return null;
+          }
+          
+          // Validate UUID format (basic check)
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+          if (!uuidRegex.test(actualUserId)) {
+            console.warn('User ID does not appear to be a valid UUID:', actualUserId);
+          }
+          
           const user = {
-            id: userInfo.sub || userInfo.id || responseData.id || 'unknown',
-            email: userInfo.email || responseData.email || credentials.identifier,
-            username: userInfo.username || responseData.username || credentials.identifier,
+            // Use the UUID from the JWT payload as the primary identifier
+            id: actualUserId,
+            sub: actualUserId, // Use UUID for sub as well (not username)
+            username: username || (identifier.includes('@') ? '' : identifier),
+            email: userInfo.email || responseData.email || (identifier.includes('@') ? identifier : ''),
             enterpriseId: userInfo.enterpriseId || responseData.enterpriseId,
             token: responseData.token,
-            sub: userInfo.sub || userInfo.id || responseData.id || 'unknown',
             iat: userInfo.iat,
             exp: userInfo.exp,
           };
           
-          console.log('Final user object for NextAuth:', JSON.stringify(user, null, 2));
+          console.log('=== FINAL USER OBJECT FOR NEXTAUTH ===');
+          console.log('user.id (UUID):', user.id);
+          console.log('user.sub (UUID):', user.sub);
+          console.log('user.username:', user.username);
+          console.log('user.email:', user.email);
+          console.log('user.enterpriseId:', user.enterpriseId);
+          
           return user;
           
         } catch (error) {
@@ -160,7 +194,6 @@ const config = {
     }),
   ],
   callbacks: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async jwt({ token, user }: { token: any; user: any }) {
       console.log('=== JWT CALLBACK ===');
       
@@ -171,21 +204,25 @@ const config = {
         // Store the access token
         token.accessToken = user.token;
         
-        // Store user information
-        token.sub = user.sub || user.id;
-        token.id = user.id;
+        // CRITICAL: Use the UUID for both sub and id
+        token.sub = user.id; // This should be the UUID, not the username
+        token.id = user.id;   // This should be the UUID, not the username
         token.username = user.username;
         token.email = user.email;
         token.enterpriseId = user.enterpriseId;
         token.iat = user.iat;
         token.exp = user.exp;
+        
+        console.log('=== JWT CALLBACK - TOKEN VALUES ===');
+        console.log('token.id (should be UUID):', token.id);
+        console.log('token.sub (should be UUID):', token.sub);
+        console.log('token.username (should be username):', token.username);
       }
       
       console.log('Final JWT token:', JSON.stringify(token, null, 2));
       return token;
     },
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async session({ session, token }: { session: Session, token: any }) {
       console.log('=== SESSION CALLBACK ===');
       console.log('Token in session callback:', JSON.stringify(token, null, 2));
@@ -198,16 +235,23 @@ const config = {
         session.user = {};
       }
       
-      // Copy user fields from token to session.user
-      session.user.sub = token.sub;
-      session.user.id = token.id;
+      // CRITICAL: Use token.id (UUID) for both id and sub in session
+      session.user.id = token.id;        // UUID from JWT
+      session.user.sub = token.id;       // Use UUID, not token.sub (which might be username)
       session.user.username = token.username;
       session.user.email = token.email;
       session.user.enterpriseId = token.enterpriseId;
       session.user.iat = token.iat;
       session.user.exp = token.exp;
       
-      console.log('Final session:', JSON.stringify(session, null, 2));
+      console.log('=== SESSION CALLBACK - FINAL SESSION VALUES ===');
+      console.log('session.user.id (should be UUID):', session.user.id);
+      console.log('session.user.sub (should be UUID):', session.user.sub);
+      console.log('session.user.username (should be username):', session.user.username);
+      console.log('session.user.email:', session.user.email);
+      console.log('session.user.enterpriseId:', session.user.enterpriseId);
+      
+      console.log('Final session object:', JSON.stringify(session, null, 2));
       return session;
     },
   },
