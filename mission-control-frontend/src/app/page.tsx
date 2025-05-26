@@ -464,7 +464,7 @@ export default function Home() {
           variants={container}
           initial="hidden"
           animate="show"
-          className="container mx-auto px-6 py-24 md:py-32 lg:py-40 flex flex-col md:flex-row items-center"
+          className="container mx-auto px-6 py-12 md:py-16 lg:py-20 flex flex-col md:flex-row items-center"
         >
           <div className="md:w-1/2 md:pr-12">
             <motion.div variants={item}>
