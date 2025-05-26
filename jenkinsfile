@@ -31,7 +31,8 @@ pipeline {
                         }
 
                         // Deploy to Kubernetes
-                        sh "kubectl apply -f k8s/${service}-deployment.yaml"
+                        sh 'export KUBECONFIG=/root/.kube/config && kubectl apply -f k8s/auth-service-deployment.yaml'
+
 
                         // Verify Deployment
                         sh "kubectl rollout status deployment/${service}"
