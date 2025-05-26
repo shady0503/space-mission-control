@@ -1,45 +1,39 @@
-pipeline {
-    agent any
+stage('Build, Push and Deploy Services') {
+  steps {
+    script {
+      def services = [
+        'auth-service','dashboard','entreprise',
+        'gateway','mission-service','spacecraft','telemetry'
+      ]
 
-    environment {
-        DOCKER_USER = 'imanebenabbou'
-        IMAGE_TAG = 'latest'
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
+      // Build & push images
+      services.each { svc ->
+        echo "→ Building & pushing ${svc}"
+        bat "docker build -t %DOCKER_USER%/${svc}:${IMAGE_TAG} ."
+        withCredentials([usernamePassword(
+          credentialsId: 'dockerhub-credentials',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          bat """
+            docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+            docker push %DOCKER_USER%/${svc}:${IMAGE_TAG}
+          """
         }
+      }
 
-        stage('Build, Push and Deploy Services') {
-            steps {
-                script {
-                    def services = ['auth-service', 'dashboard', 'entreprise', 'gateway', 'mission-service', 'spacecraft', 'telemetry']
+      // Deploy all manifests in k8s/ at once
+      echo "→ Applying all k8s manifests"
+      bat """
+        set KUBECONFIG=C:\\Users\\DELL\\.kube\\config
+        kubectl apply -f k8s/
+      """
 
-                    services.each { service ->
-                        echo "Processing ${service}"
-
-                        // Build Docker image
-                        bat "docker build -f Dockerfile -t %DOCKER_USER%/${service}:${IMAGE_TAG} ."
-
-                        // Push to Docker Hub
-                        withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                            bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-                            
-                            bat "docker push %DOCKER_USER%/${service}:${IMAGE_TAG}"
-                            
-                        }
-
-                        // Deploy to Kubernetes (only works if `kubectl` is installed and configured properly on Windows)
-                        bat 'set KUBECONFIG=C:\Users\DELL\.kube\config && kubectl apply -f k8s\auth-service-deployment.yaml'
-
-                        // Verify Deployment
-                        bat "kubectl rollout status deployment/${service}"
-                    }
-                }
-            }
-        }
+      // Wait for each deployment to roll out
+      services.each { svc ->
+        echo "→ Waiting rollout of ${svc}"
+        bat "kubectl rollout status deployment/${svc}"
+      }
     }
+  }
 }
